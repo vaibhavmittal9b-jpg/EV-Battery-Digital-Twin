@@ -1,163 +1,990 @@
 <!DOCTYPE html>
+<html lang="en">
 
-<html>
 <head>
 
-    <title>EV Battery Digital Twin</title>
+<meta charset="UTF-8">
 
-    <style>
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-        body {
-            font-family: Arial, sans-serif;
-            background: #111827;
-            color: white;
-            margin: 40px;
-        }
+<title>
+EV Battery Pack Digital Twin
+</title>
 
-        h1 {
-            text-align: center;
-        }
+<script src="https://cdn.plot.ly/plotly-3.1.0.min.js"></script>
 
-        .grid {
-            display: grid;
-            grid-template-columns:
-                repeat(4, 1fr);
-            gap: 20px;
-        }
+<style>
 
-        .card {
-            background: #1f2937;
-            padding: 25px;
-            border-radius: 12px;
-            text-align: center;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        .value {
-            font-size: 30px;
-            font-weight: bold;
-        }
+body {
+    margin: 0;
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
 
-    </style>
+    background:
+        #0f172a;
+
+    color:
+        #f8fafc;
+}
+
+.container {
+    max-width: 1500px;
+    margin: auto;
+    padding: 30px;
+}
+
+/* HEADER */
+
+.title {
+    text-align: center;
+    font-size: 42px;
+    font-weight: 700;
+    margin-top: 10px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #94a3b8;
+    margin-top: 8px;
+    margin-bottom: 35px;
+}
+
+/* SECTION */
+
+.section-title {
+    font-size: 25px;
+    font-weight: bold;
+    margin-top: 35px;
+    margin-bottom: 18px;
+}
+
+/* METRIC GRID */
+
+.metrics {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 18px;
+
+    margin-bottom: 18px;
+}
+
+.metric-card {
+
+    background:
+        #1e293b;
+
+    border:
+        1px solid #334155;
+
+    border-radius:
+        14px;
+
+    padding:
+        22px;
+
+    min-height:
+        125px;
+}
+
+.metric-label {
+
+    color:
+        #94a3b8;
+
+    font-size:
+        14px;
+
+    margin-bottom:
+        15px;
+}
+
+.metric-value {
+
+    font-size:
+        29px;
+
+    font-weight:
+        bold;
+}
+
+/* STATUS */
+
+.status {
+
+    padding:
+        20px;
+
+    border-radius:
+        12px;
+
+    text-align:
+        center;
+
+    font-size:
+        22px;
+
+    font-weight:
+        bold;
+
+    margin-bottom:
+        20px;
+}
+
+.status-normal {
+
+    background:
+        #064e3b;
+
+    border:
+        1px solid #10b981;
+}
+
+.status-warning {
+
+    background:
+        #78350f;
+
+    border:
+        1px solid #f59e0b;
+}
+
+.status-critical {
+
+    background:
+        #7f1d1d;
+
+    border:
+        1px solid #ef4444;
+}
+
+/* INFO BOXES */
+
+.two-column {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap:
+        18px;
+}
+
+.info-card {
+
+    background:
+        #1e293b;
+
+    border:
+        1px solid #334155;
+
+    border-radius:
+        14px;
+
+    padding:
+        20px;
+}
+
+.success {
+    border-left:
+        5px solid #10b981;
+}
+
+.warning {
+    border-left:
+        5px solid #f59e0b;
+}
+
+.danger {
+    border-left:
+        5px solid #ef4444;
+}
+
+/* GRAPHS */
+
+.graph-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap:
+        20px;
+}
+
+.graph-card {
+
+    background:
+        #111827;
+
+    border:
+        1px solid #334155;
+
+    border-radius:
+        14px;
+
+    padding:
+        10px;
+
+    min-height:
+        410px;
+}
+
+/* MODEL INFO */
+
+.model-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap:
+        18px;
+}
+
+.model-card {
+
+    background:
+        #1e293b;
+
+    border:
+        1px solid #334155;
+
+    border-radius:
+        14px;
+
+    padding:
+        22px;
+
+    line-height:
+        1.7;
+}
+
+.model-card h3 {
+
+    margin-top:
+        0;
+}
+
+/* FOOTER */
+
+.footer {
+
+    text-align:
+        center;
+
+    color:
+        #64748b;
+
+    margin-top:
+        50px;
+
+    padding:
+        25px 0;
+
+    border-top:
+        1px solid #334155;
+}
+
+/* MOBILE */
+
+@media (
+    max-width: 1000px
+) {
+
+    .metrics {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .graph-grid {
+        grid-template-columns:
+            1fr;
+    }
+
+    .model-grid {
+        grid-template-columns:
+            1fr;
+    }
+}
+
+@media (
+    max-width: 600px
+) {
+
+    .metrics {
+        grid-template-columns:
+            1fr;
+    }
+
+    .two-column {
+        grid-template-columns:
+            1fr;
+    }
+
+    .title {
+        font-size:
+            30px;
+    }
+}
+
+</style>
 
 </head>
 
 
 <body>
 
-<h1>
-    EV Battery Pack Digital Twin
-</h1>
+<div class="container">
 
 
-<div class="grid">
+<div class="title">
 
-    <div class="card">
-
-        <h3>State of Charge</h3>
-
-        <div class="value">
-            {{ battery.soc }} %
-        </div>
-
-    </div>
-
-
-    <div class="card">
-
-        <h3>State of Health</h3>
-
-        <div class="value">
-            {{ battery.soh }} %
-        </div>
-
-    </div>
-
-
-    <div class="card">
-
-        <h3>Pack Voltage</h3>
-
-        <div class="value">
-            {{ battery.voltage }} V
-        </div>
-
-    </div>
-
-
-    <div class="card">
-
-        <h3>Current</h3>
-
-        <div class="value">
-            {{ battery.current }} A
-        </div>
-
-    </div>
-
-
-    <div class="card">
-
-        <h3>Temperature</h3>
-
-        <div class="value">
-            {{ battery.temperature }} °C
-        </div>
-
-    </div>
-
-
-    <div class="card">
-
-        <h3>Remaining Useful Life</h3>
-
-        <div class="value">
-            {{ battery.rul }} cycles
-        </div>
-
-    </div>
-
-
-    <div class="card">
-
-        <h3>Weak Group</h3>
-
-        <div class="value">
-            {{ battery.weak_group }}
-        </div>
-
-    </div>
-
-
-    <div class="card">
-
-        <h3>Cell Imbalance</h3>
-
-        <div class="value">
-            {{ battery.cell_imbalance }} V
-        </div>
-
-    </div>
+🔋 EV Battery Pack Digital Twin
 
 </div>
 
+
+<div class="subtitle">
+
+Software-Based Intelligent Monitoring,
+Fault Detection and Remaining Useful Life Prediction
+
+</div>
+
+
+<!-- BATTERY OVERVIEW -->
+
+
+<div class="section-title">
+
+Battery Pack Overview
+
+</div>
+
+
+<div class="metrics">
+
+
+<div class="metric-card">
+
+<div class="metric-label">
+State of Charge
+</div>
+
+<div class="metric-value">
+
+{{ "%.2f"|format(battery.soc) }} %
+
+</div>
+
+</div>
+
+
+<div class="metric-card">
+
+<div class="metric-label">
+State of Health
+</div>
+
+<div class="metric-value">
+
+{{ "%.2f"|format(battery.soh) }} %
+
+</div>
+
+</div>
+
+
+<div class="metric-card">
+
+<div class="metric-label">
+Pack Voltage
+</div>
+
+<div class="metric-value">
+
+{{ "%.2f"|format(battery.voltage) }} V
+
+</div>
+
+</div>
+
+
+<div class="metric-card">
+
+<div class="metric-label">
+Battery Current
+</div>
+
+<div class="metric-value">
+
+{{ "%.2f"|format(battery.current) }} A
+
+</div>
+
+</div>
+
+
+<div class="metric-card">
+
+<div class="metric-label">
+Temperature
+</div>
+
+<div class="metric-value">
+
+{{ "%.2f"|format(battery.temperature) }} °C
+
+</div>
+
+</div>
+
+
+<div class="metric-card">
+
+<div class="metric-label">
+Remaining Useful Life
+</div>
+
+<div class="metric-value">
+
+{{ "%.0f"|format(battery.rul) }} cycles
+
+</div>
+
+</div>
+
+
+<div class="metric-card">
+
+<div class="metric-label">
+Weak Cell Group
+</div>
+
+<div class="metric-value">
+
+Group {{ battery.weak_group }}
+
+</div>
+
+</div>
+
+
+<div class="metric-card">
+
+<div class="metric-label">
+Cell Imbalance
+</div>
+
+<div class="metric-value">
+
+{{ "%.3f"|format(battery.cell_imbalance) }} V
+
+</div>
+
+</div>
+
+
+</div>
+
+
+<!-- STATUS -->
+
+
+<div class="section-title">
+
+Battery Health Status
+
+</div>
+
+
+{% if battery.status == "NORMAL" %}
+
+<div class="status status-normal">
+
+✓ BATTERY STATUS: NORMAL
+
+</div>
+
+{% elif battery.status == "WARNING" %}
+
+<div class="status status-warning">
+
+⚠ BATTERY STATUS: WARNING
+
+</div>
+
+{% else %}
+
+<div class="status status-critical">
+
+🚨 BATTERY STATUS:
+{{ battery.status }}
+
+</div>
+
+{% endif %}
+
+
+<div class="two-column">
+
+
+<div class="
+info-card
+{% if battery.faults == 'None' %}
+success
+{% else %}
+danger
+{% endif %}
+">
+
+<h3>
+Pack-Level Faults
+</h3>
+
+{% if battery.faults == "None" %}
+
+No pack-level fault detected.
+
+{% else %}
+
+{{ battery.faults }}
+
+{% endif %}
+
+</div>
+
+
+<div class="
+info-card
+{% if battery.cell_status == 'BALANCED' %}
+success
+{% else %}
+warning
+{% endif %}
+">
+
+<h3>
+Cell Group Status
+</h3>
+
+{{ battery.cell_status }}
+
+<br><br>
+
+Weak Group:
+{{ battery.weak_group }}
+
+</div>
+
+
+</div>
+
+
+<!-- OPERATING CONDITION -->
+
+
+<div class="section-title">
+
+Vehicle Operating Condition
+
+</div>
+
+
+<div class="info-card">
+
+Current Driving Mode:
+
+<strong>
+
+{{ battery.driving_condition }}
+
+</strong>
+
+</div>
+
+
+<!-- GRAPHS -->
+
+
+<div class="section-title">
+
+Battery Performance Analysis
+
+</div>
+
+
+<div class="graph-grid">
+
+
+<div
+    id="socGraph"
+    class="graph-card">
+</div>
+
+
+<div
+    id="voltageGraph"
+    class="graph-card">
+</div>
+
+
+<div
+    id="currentGraph"
+    class="graph-card">
+</div>
+
+
+<div
+    id="temperatureGraph"
+    class="graph-card">
+</div>
+
+
+<div
+    id="sohGraph"
+    class="graph-card">
+</div>
+
+
+<div
+    id="rulGraph"
+    class="graph-card">
+</div>
+
+
+</div>
+
+
+<!-- CELL GROUP -->
+
+
+<div class="section-title">
+
+Cell Group Monitoring
+
+</div>
+
+
+<div
+    id="cellGraph"
+    class="graph-card">
+</div>
+
+
+<!-- MODEL INFO -->
+
+
+<div class="section-title">
+
+Digital Twin Information
+
+</div>
+
+
+<div class="model-grid">
+
+
+<div class="model-card">
+
+<h3>
+Battery Configuration
+</h3>
+
+12S4P Lithium-ion Pack
 
 <br>
 
+48 physical cells represented
 
-<div class="card">
+<br>
 
-    <h2>
-        Battery Status:
-        {{ battery.status }}
-    </h2>
-
-    <p>
-        Fault:
-        {{ battery.faults }}
-    </p>
+12 voltage-monitoring groups
 
 </div>
 
 
+<div class="model-card">
+
+<h3>
+Battery Models
+</h3>
+
+SOC Estimation
+
+<br>
+
+Equivalent Circuit Model
+
+<br>
+
+Thermal Model
+
+<br>
+
+SOH Degradation Model
+
+</div>
+
+
+<div class="model-card">
+
+<h3>
+Intelligent Monitoring
+</h3>
+
+BMS Protection
+
+<br>
+
+Cell Imbalance Detection
+
+<br>
+
+Weak Group Identification
+
+<br>
+
+RUL Prediction
+
+</div>
+
+
+</div>
+
+
+<div class="footer">
+
+EV Battery Pack Digital Twin
+|
+Software-Based Battery Monitoring
+and Predictive Analysis
+
+</div>
+
+
+</div>
+
+
+<script>
+
+const graph =
+{{ graph | tojson }};
+
+const groupVoltages =
+{{ groups | tojson }};
+
+
+const commonLayout = {
+
+    paper_bgcolor:
+        "#111827",
+
+    plot_bgcolor:
+        "#111827",
+
+    font: {
+        color:
+            "#e2e8f0"
+    },
+
+    margin: {
+        l: 60,
+        r: 30,
+        t: 60,
+        b: 60
+    }
+};
+
+
+function lineGraph(
+    element,
+    y,
+    title,
+    yTitle
+) {
+
+    Plotly.newPlot(
+
+        element,
+
+        [{
+            x:
+                graph.time,
+
+            y:
+                y,
+
+            type:
+                "scatter",
+
+            mode:
+                "lines",
+
+            line: {
+                width:
+                    3
+            }
+        }],
+
+        {
+            ...commonLayout,
+
+            title:
+                title,
+
+            xaxis: {
+                title:
+                    "Time (seconds)",
+
+                gridcolor:
+                    "#334155"
+            },
+
+            yaxis: {
+                title:
+                    yTitle,
+
+                gridcolor:
+                    "#334155"
+            }
+        },
+
+        {
+            responsive:
+                true,
+
+            displaylogo:
+                false
+        }
+    );
+}
+
+
+lineGraph(
+    "socGraph",
+    graph.soc,
+    "State of Charge vs Time",
+    "SOC (%)"
+);
+
+
+lineGraph(
+    "voltageGraph",
+    graph.voltage,
+    "Battery Pack Voltage vs Time",
+    "Voltage (V)"
+);
+
+
+lineGraph(
+    "currentGraph",
+    graph.current,
+    "Battery Current vs Time",
+    "Current (A)"
+);
+
+
+lineGraph(
+    "temperatureGraph",
+    graph.temperature,
+    "Battery Temperature vs Time",
+    "Temperature (°C)"
+);
+
+
+lineGraph(
+    "sohGraph",
+    graph.soh,
+    "State of Health vs Time",
+    "SOH (%)"
+);
+
+
+lineGraph(
+    "rulGraph",
+    graph.rul,
+    "Remaining Useful Life Prediction",
+    "Remaining Cycles"
+);
+
+
+// CELL GROUP BAR GRAPH
+
+
+const labels =
+groupVoltages.map(
+    (_, i) =>
+        "Group " + (i + 1)
+);
+
+
+Plotly.newPlot(
+
+    "cellGraph",
+
+    [{
+        x:
+            labels,
+
+        y:
+            groupVoltages,
+
+        type:
+            "bar"
+    }],
+
+    {
+        ...commonLayout,
+
+        title:
+            "12-Series Group Voltage Monitoring",
+
+        xaxis: {
+            title:
+                "Battery Series Group"
+        },
+
+        yaxis: {
+            title:
+                "Voltage (V)",
+
+            gridcolor:
+                "#334155"
+        }
+    },
+
+    {
+        responsive:
+            true,
+
+        displaylogo:
+            false
+    }
+
+);
+
+</script>
+
+
 </body>
+
 </html>
