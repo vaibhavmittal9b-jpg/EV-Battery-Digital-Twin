@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+
+    <title>EV Battery Digital Twin</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #111827;
+            color: white;
+            margin: 40px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns:
+                repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            background: #1f2937;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .value {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<h1>
+    EV Battery Pack Digital Twin
+</h1>
+
+
+<div class="grid">
+
+    <div class="card">
+
+        <h3>State of Charge</h3>
+
+        <div class="value">
+            {{ battery.soc }} %
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>State of Health</h3>
+
+        <div class="value">
+            {{ battery.soh }} %
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>Pack Voltage</h3>
+
+        <div class="value">
+            {{ battery.voltage }} V
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>Current</h3>
+
+        <div class="value">
+            {{ battery.current }} A
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>Temperature</h3>
+
+        <div class="value">
+            {{ battery.temperature }} °C
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>Remaining Useful Life</h3>
+
+        <div class="value">
+            {{ battery.rul }} cycles
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>Weak Group</h3>
+
+        <div class="value">
+            {{ battery.weak_group }}
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>Cell Imbalance</h3>
+
+        <div class="value">
+            {{ battery.cell_imbalance }} V
+        </div>
+
+    </div>
+
+</div>
+
+
+<br>
+
+
+<div class="card">
+
+    <h2>
+        Battery Status:
+        {{ battery.status }}
+    </h2>
+
+    <p>
+        Fault:
+        {{ battery.faults }}
+    </p>
+
+</div>
+
+
+</body>
+</html>
