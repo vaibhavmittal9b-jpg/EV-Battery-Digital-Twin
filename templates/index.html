@@ -118,6 +118,106 @@ body {
     font-weight:
         bold;
 }
+.control-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(5, 1fr);
+
+    gap: 15px;
+}
+
+
+.control-card {
+
+    background: #1e293b;
+
+    border: 1px solid #334155;
+
+    border-radius: 12px;
+
+    padding: 18px;
+}
+
+
+.control-card label {
+
+    display: block;
+
+    color: #94a3b8;
+
+    margin-bottom: 10px;
+}
+
+
+.control-card input,
+.control-card select {
+
+    width: 100%;
+
+    padding: 10px;
+
+    border-radius: 7px;
+
+    border: 1px solid #475569;
+
+    background: #0f172a;
+
+    color: white;
+
+    font-size: 15px;
+}
+
+
+.simulate-button {
+
+    margin-top: 20px;
+
+    width: 100%;
+
+    padding: 15px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: #2563eb;
+
+    color: white;
+
+    font-size: 17px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+
+.simulate-button:hover {
+
+    background: #1d4ed8;
+}
+
+
+@media (max-width: 1000px) {
+
+    .control-grid {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .control-grid {
+
+        grid-template-columns:
+            1fr;
+    }
+}
 
 /* STATUS */
 
@@ -374,6 +474,157 @@ Fault Detection and Remaining Useful Life Prediction
 
 
 <div class="section-title">
+<div class="section-title">
+Simulation Control Panel
+</div>
+
+<form method="POST">
+
+<div class="control-grid">
+
+    <div class="control-card">
+
+        <label>
+            Initial SOC
+        </label>
+
+        <input
+            type="number"
+            name="initial_soc"
+            min="10"
+            max="100"
+            step="1"
+            value="{{ controls.initial_soc }}"
+        >
+
+        <span>%</span>
+
+    </div>
+
+
+    <div class="control-card">
+
+        <label>
+            Driving Load
+        </label>
+
+        <select name="load_multiplier">
+
+            <option
+                value="0.7"
+                {% if controls.load_multiplier == 0.7 %}
+                selected
+                {% endif %}
+            >
+                Eco Driving
+            </option>
+
+            <option
+                value="1"
+                {% if controls.load_multiplier == 1 %}
+                selected
+                {% endif %}
+            >
+                Normal Driving
+            </option>
+
+            <option
+                value="1.4"
+                {% if controls.load_multiplier == 1.4 %}
+                selected
+                {% endif %}
+            >
+                Aggressive Driving
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <div class="control-card">
+
+        <label>
+            Ambient Temperature
+        </label>
+
+        <input
+            type="number"
+            name="ambient_temperature"
+            value="{{ controls.ambient_temperature }}"
+            min="-10"
+            max="60"
+        >
+
+        <span>°C</span>
+
+    </div>
+
+
+    <div class="control-card">
+
+        <label>
+            Battery Aging
+        </label>
+
+        <input
+            type="number"
+            name="aging_cycles"
+            value="{{ controls.aging_cycles }}"
+            min="0"
+            max="1500"
+        >
+
+        <span>cycles</span>
+
+    </div>
+
+
+    <div class="control-card">
+
+        <label>
+            Fault Injection
+        </label>
+
+        <select name="fault_mode">
+
+            <option value="none">
+                Normal Operation
+            </option>
+
+            <option
+                value="cell_fault"
+                {% if controls.fault_mode == "cell_fault" %}
+                selected
+                {% endif %}
+            >
+                Weak Cell Fault
+            </option>
+
+            <option
+                value="thermal_fault"
+                {% if controls.fault_mode == "thermal_fault" %}
+                selected
+                {% endif %}
+            >
+                Thermal Fault
+            </option>
+
+        </select>
+
+    </div>
+
+</div>
+
+
+<button
+    type="submit"
+    class="simulate-button"
+>
+▶ RUN DIGITAL TWIN SIMULATION
+</button>
+
+</form>
 
 Battery Pack Overview
 
