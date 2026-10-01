@@ -786,7 +786,7 @@ and Predictive Analysis
 
 <script>
 
-const graph =
+const chartData =
 {{ graph | tojson }};
 
 const groupVoltages =
@@ -828,7 +828,7 @@ function lineGraph(
 
         [{
             x:
-                graph.time,
+                chartData.time,
 
             y:
                 y,
@@ -881,7 +881,7 @@ function lineGraph(
 
 lineGraph(
     "socGraph",
-    graph.soc,
+    chartData.soc,
     "State of Charge vs Time",
     "SOC (%)"
 );
@@ -889,7 +889,7 @@ lineGraph(
 
 lineGraph(
     "voltageGraph",
-    graph.voltage,
+    chartData.voltage,
     "Battery Pack Voltage vs Time",
     "Voltage (V)"
 );
@@ -897,7 +897,7 @@ lineGraph(
 
 lineGraph(
     "currentGraph",
-    graph.current,
+    chartData.current,
     "Battery Current vs Time",
     "Current (A)"
 );
@@ -905,7 +905,7 @@ lineGraph(
 
 lineGraph(
     "temperatureGraph",
-    graph.temperature,
+    chartData.temperature,
     "Battery Temperature vs Time",
     "Temperature (°C)"
 );
@@ -913,7 +913,7 @@ lineGraph(
 
 lineGraph(
     "sohGraph",
-    graph.soh,
+    chartData.soh,
     "State of Health vs Time",
     "SOH (%)"
 );
@@ -921,7 +921,7 @@ lineGraph(
 
 lineGraph(
     "rulGraph",
-    graph.rul,
+    chartData.rul,
     "Remaining Useful Life Prediction",
     "Remaining Cycles"
 );
