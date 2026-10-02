@@ -13,16 +13,10 @@ app = Flask(__name__)
 # ============================================================
 
 def clamp(value, minimum, maximum):
-    """
-    Keep a value between minimum and maximum limits.
-    """
     return max(minimum, min(maximum, value))
 
 
 def safe_float(value, default):
-    """
-    Convert form input to float safely.
-    """
     try:
         return float(value)
     except (TypeError, ValueError):
@@ -30,9 +24,6 @@ def safe_float(value, default):
 
 
 def safe_int(value, default):
-    """
-    Convert form input to integer safely.
-    """
     try:
         return int(value)
     except (TypeError, ValueError):
@@ -40,29 +31,14 @@ def safe_int(value, default):
 
 
 # ============================================================
-# OCV - SOC MODEL
+# LI-ION OCV - SOC MODEL
 # ============================================================
 
 def cell_ocv_from_soc(soc):
-    """
-    Approximate lithium-ion Open Circuit Voltage (OCV)
-    from State of Charge.
-
-    Uses interpolation between approximate Li-ion OCV points.
-    """
 
     soc_points = [
-        0,
-        10,
-        20,
-        30,
-        40,
-        50,
-        60,
-        70,
-        80,
-        90,
-        100
+        0, 10, 20, 30, 40,
+        50, 60, 70, 80, 90, 100
     ]
 
     voltage_points = [
@@ -81,7 +57,6 @@ def cell_ocv_from_soc(soc):
 
     soc = clamp(soc, 0, 100)
 
-    # Find the correct interval
     for i in range(len(soc_points) - 1):
 
         lower_soc = soc_points[i]
@@ -97,13 +72,11 @@ def cell_ocv_from_soc(soc):
                 / (upper_soc - lower_soc)
             )
 
-            voltage = (
+            return (
                 lower_voltage
                 + fraction
                 * (upper_voltage - lower_voltage)
             )
-
-            return voltage
 
     return voltage_points[-1]
 
@@ -113,53 +86,36 @@ def cell_ocv_from_soc(soc):
 # ============================================================
 
 def get_current_and_mode(time):
-    """
-    Virtual EV driving cycle.
-
-    Positive current:
-        Battery discharge
-
-    Negative current:
-        Regenerative braking / charging
-    """
 
     cycle_time = time % 120
 
-    # 0 - 10 seconds
     if cycle_time < 10:
         return 1.0, "Idle"
 
-    # 10 - 25 seconds
     elif cycle_time < 25:
         return 25.0, "Strong Acceleration"
 
-    # 25 - 55 seconds
     elif cycle_time < 55:
         return 10.0, "Cruising"
 
-    # 55 - 70 seconds
     elif cycle_time < 70:
         return 18.0, "Acceleration"
 
-    # 70 - 90 seconds
     elif cycle_time < 90:
         return 8.0, "Cruising"
 
-    # 90 - 100 seconds
     elif cycle_time < 100:
         return -12.0, "Regenerative Braking"
 
-    # 100 - 115 seconds
     elif cycle_time < 115:
         return 5.0, "Slow Driving"
 
-    # 115 - 120 seconds
     else:
         return 0.5, "Stopped"
 
 
 # ============================================================
-# MAIN DIGITAL TWIN SIMULATION
+# DIGITAL TWIN SIMULATION
 # ============================================================
 
 def simulate_battery(
@@ -170,25 +126,26 @@ def simulate_battery(
     fault_mode="none"
 ):
 
-    # ========================================================
-    # BATTERY PACK CONFIGURATION
-    # ========================================================
+    # --------------------------------------------------------
+    # BATTERY CONFIGURATION
+    # --------------------------------------------------------
 
     nominal_capacity_ah = 12.0
 
     series_groups = 12
 
-    # Fresh battery internal resistance
     base_r0 = 0.03
-
-    # RC polarization model
     base_r1 = 0.02
 
     c1 = 2000.0
 
-    # ========================================================
+    simulation_time = 600
+    dt = 5
+
+
+    # --------------------------------------------------------
     # INITIAL CONDITIONS
-    # ========================================================
+    # --------------------------------------------------------
 
     soc = clamp(
         float(initial_soc),
@@ -200,16 +157,12 @@ def simulate_battery(
         ambient_temperature
     )
 
-    # Polarization voltage
     polarization_voltage = 0.0
 
 
-    # ========================================================
-    # STATE OF HEALTH
-    # ========================================================
-
-    # Demo aging model:
-    # 0.02% SOH reduction per equivalent aging cycle
+    # --------------------------------------------------------
+    # SOH MODEL
+    # --------------------------------------------------------
 
     soh = (
         100.0
@@ -223,11 +176,9 @@ def simulate_battery(
     )
 
 
-    # ========================================================
-    # EFFECTIVE BATTERY CAPACITY
-    # ========================================================
-
-    # As SOH decreases, usable capacity decreases.
+    # --------------------------------------------------------
+    # EFFECTIVE CAPACITY
+    # --------------------------------------------------------
 
     effective_capacity_ah = (
         nominal_capacity_ah
@@ -236,12 +187,11 @@ def simulate_battery(
     )
 
 
-    # ========================================================
-    # REMAINING USEFUL LIFE
-    # ========================================================
+    # --------------------------------------------------------
+    # RUL
+    # --------------------------------------------------------
 
     end_of_life_soh = 80.0
-
     degradation_per_cycle = 0.02
 
     if soh <= end_of_life_soh:
@@ -256,35 +206,35 @@ def simulate_battery(
         ) / degradation_per_cycle
 
 
-    # ========================================================
-    # AGING EFFECT ON INTERNAL RESISTANCE
-    # ========================================================
+    # --------------------------------------------------------
+    # AGING EFFECT ON RESISTANCE
+    # --------------------------------------------------------
 
-    # Older batteries generally have higher internal resistance.
-
-    aging_resistance_factor = (
+    resistance_factor = (
         1.0
         + (100.0 - soh) * 0.015
     )
 
     r0 = (
         base_r0
-        * aging_resistance_factor
+        * resistance_factor
     )
 
     r1 = (
         base_r1
-        * aging_resistance_factor
+        * resistance_factor
     )
 
 
-    # ========================================================
-    # DATA STORAGE FOR GRAPHS
-    # ========================================================
+    # --------------------------------------------------------
+    # GRAPH STORAGE
+    # --------------------------------------------------------
 
     times = []
 
     soc_values = []
+
+    soh_values = []
 
     voltage_values = []
 
@@ -292,16 +242,29 @@ def simulate_battery(
 
     temperature_values = []
 
-    soh_values = []
-
     rul_values = []
 
     driving_modes = []
 
+    consumed_energy_values = []
 
-    # ========================================================
-    # VALUES FOR SAFETY ANALYSIS
-    # ========================================================
+    regen_energy_values = []
+
+    group_voltage_history = []
+
+
+    # --------------------------------------------------------
+    # ENERGY
+    # --------------------------------------------------------
+
+    consumed_energy_wh = 0.0
+
+    regen_energy_wh = 0.0
+
+
+    # --------------------------------------------------------
+    # EXTREME VALUES
+    # --------------------------------------------------------
 
     highest_temperature = temperature
 
@@ -314,22 +277,19 @@ def simulate_battery(
     highest_charge_current = 0.0
 
 
-    # ========================================================
-    # SIMULATION PARAMETERS
-    # ========================================================
-
-    simulation_time = 600
-
-    dt = 5
-
-
-    latest_current = 0.0
+    # --------------------------------------------------------
+    # LATEST VALUES
+    # --------------------------------------------------------
 
     latest_voltage = 0.0
+
+    latest_current = 0.0
 
     latest_mode = "Idle"
 
     latest_pack_ocv = 0.0
+
+    latest_group_voltages = []
 
 
     # ========================================================
@@ -343,34 +303,30 @@ def simulate_battery(
     ):
 
         # ----------------------------------------------------
-        # EV DRIVING CONDITION
+        # DRIVING CYCLE
         # ----------------------------------------------------
 
         current, driving_mode = (
             get_current_and_mode(time)
         )
 
-        # Apply user-selected load multiplier
-
-        current = (
-            current
-            * load_multiplier
-        )
+        current *= load_multiplier
 
 
         # ----------------------------------------------------
-        # OPTIONAL OVERCURRENT FAULT SUPPORT
+        # OVERCURRENT FAULT
         # ----------------------------------------------------
 
-        if fault_mode == "overcurrent_fault":
+        if (
+            fault_mode == "overcurrent_fault"
+            and 120 <= time <= 180
+        ):
 
-            if 120 <= time <= 180:
-
-                current = 45.0
+            current = 45.0
 
 
         # ----------------------------------------------------
-        # SOC CALCULATION
+        # SOC - COULOMB COUNTING
         # ----------------------------------------------------
 
         discharged_ah = (
@@ -394,7 +350,7 @@ def simulate_battery(
 
 
         # ----------------------------------------------------
-        # OCV CALCULATION
+        # OPEN CIRCUIT VOLTAGE
         # ----------------------------------------------------
 
         cell_ocv = (
@@ -422,9 +378,6 @@ def simulate_battery(
             * dt
         )
 
-
-        # Terminal voltage equation
-
         terminal_voltage = (
             pack_ocv
             - current * r0
@@ -441,19 +394,16 @@ def simulate_battery(
             * r0
         )
 
-
         heating_effect = (
             heat_generated
             * dt
             * 0.0004
         )
 
-
         cooling_effect = (
             temperature
             - ambient_temperature
         ) * 0.01
-
 
         temperature += (
             heating_effect
@@ -462,11 +412,8 @@ def simulate_battery(
 
 
         # ----------------------------------------------------
-        # THERMAL FAULT INJECTION
+        # THERMAL FAULT
         # ----------------------------------------------------
-
-        # Inject near the end of the simulation
-        # so the dashboard clearly displays the fault.
 
         if (
             fault_mode == "thermal_fault"
@@ -480,12 +427,81 @@ def simulate_battery(
 
 
         # ----------------------------------------------------
-        # STORE GRAPH DATA
+        # CELL GROUP VOLTAGES
+        # ----------------------------------------------------
+
+        group_voltages = []
+
+        base_group_voltage = (
+            terminal_voltage
+            / series_groups
+        )
+
+        for i in range(series_groups):
+
+            normal_variation = (
+                (i % 3 - 1)
+                * 0.006
+            )
+
+            group_voltage = (
+                base_group_voltage
+                + normal_variation
+            )
+
+            # Group 5 slightly weaker
+            if i == 4:
+
+                group_voltage -= 0.04
+
+            # Manual cell fault
+            if (
+                fault_mode == "cell_fault"
+                and i == 4
+            ):
+
+                group_voltage -= 0.18
+
+            group_voltages.append(
+                group_voltage
+            )
+
+
+        # ----------------------------------------------------
+        # ENERGY CALCULATION
+        # ----------------------------------------------------
+
+        power_w = (
+            terminal_voltage
+            * current
+        )
+
+        if current >= 0:
+
+            consumed_energy_wh += (
+                max(power_w, 0)
+                * dt
+                / 3600.0
+            )
+
+        else:
+
+            regen_energy_wh += (
+                abs(power_w)
+                * dt
+                / 3600.0
+            )
+
+
+        # ----------------------------------------------------
+        # STORE DATA
         # ----------------------------------------------------
 
         times.append(time)
 
         soc_values.append(soc)
+
+        soh_values.append(soh)
 
         voltage_values.append(
             terminal_voltage
@@ -499,10 +515,6 @@ def simulate_battery(
             temperature
         )
 
-        soh_values.append(
-            soh
-        )
-
         rul_values.append(
             rul_cycles
         )
@@ -511,9 +523,21 @@ def simulate_battery(
             driving_mode
         )
 
+        consumed_energy_values.append(
+            consumed_energy_wh
+        )
+
+        regen_energy_values.append(
+            regen_energy_wh
+        )
+
+        group_voltage_history.append(
+            group_voltages
+        )
+
 
         # ----------------------------------------------------
-        # TRACK EXTREME VALUES
+        # TRACK PEAKS
         # ----------------------------------------------------
 
         highest_temperature = max(
@@ -543,104 +567,47 @@ def simulate_battery(
 
 
         # ----------------------------------------------------
-        # STORE LATEST VALUES
+        # LATEST VALUES
         # ----------------------------------------------------
-
-        latest_current = current
 
         latest_voltage = (
             terminal_voltage
         )
 
+        latest_current = current
+
         latest_mode = driving_mode
 
         latest_pack_ocv = pack_ocv
 
-
-    # ========================================================
-    # CELL GROUP SIMULATION
-    # ========================================================
-
-    group_voltages = []
-
-
-    # Approximate voltage of each series group
-
-    base_group_voltage = (
-        latest_voltage
-        / series_groups
-    )
-
-
-    for i in range(series_groups):
-
-        # Small manufacturing variation
-        normal_variation = (
-            (i % 3 - 1)
-            * 0.006
-        )
-
-
-        group_voltage = (
-            base_group_voltage
-            + normal_variation
-        )
-
-
-        # ----------------------------------------------------
-        # NORMAL WEAK GROUP
-        # ----------------------------------------------------
-
-        # Group 5 is intentionally slightly weaker.
-
-        if i == 4:
-
-            group_voltage -= 0.04
-
-
-        # ----------------------------------------------------
-        # MANUAL CELL FAULT INJECTION
-        # ----------------------------------------------------
-
-        if (
-            fault_mode == "cell_fault"
-            and i == 4
-        ):
-
-            group_voltage -= 0.18
-
-
-        group_voltages.append(
-            group_voltage
+        latest_group_voltages = (
+            group_voltages
         )
 
 
     # ========================================================
-    # CELL IMBALANCE ANALYSIS
+    # CELL IMBALANCE
     # ========================================================
 
     highest_group_voltage = max(
-        group_voltages
+        latest_group_voltages
     )
 
     lowest_group_voltage = min(
-        group_voltages
+        latest_group_voltages
     )
-
 
     voltage_imbalance = (
         highest_group_voltage
         - lowest_group_voltage
     )
 
-
     weak_group = (
-        group_voltages.index(
+        latest_group_voltages.index(
             lowest_group_voltage
         )
         + 1
     )
-
 
     if voltage_imbalance > 0.10:
 
@@ -654,74 +621,113 @@ def simulate_battery(
 
 
     # ========================================================
-    # BMS FAULT DETECTION
+    # FAULT ANALYSIS
     # ========================================================
 
-    faults = []
+    fault_cards = []
+
+
+    def add_fault(
+        title,
+        severity,
+        detail,
+        action
+    ):
+
+        fault_cards.append({
+
+            "title": title,
+
+            "severity": severity,
+
+            "detail": detail,
+
+            "action": action
+        })
 
 
     # --------------------------------------------------------
-    # VOLTAGE SAFETY
+    # VOLTAGE
     # --------------------------------------------------------
 
     if highest_voltage > 50.4:
 
-        faults.append(
-            "OVER-VOLTAGE"
+        add_fault(
+            "Over-Voltage",
+            "warning",
+            "Pack voltage exceeded the configured maximum.",
+            "Reduce charging or regenerative current."
         )
 
 
     if lowest_voltage < 36.0:
 
-        faults.append(
-            "UNDER-VOLTAGE"
+        add_fault(
+            "Under-Voltage",
+            "critical",
+            "Pack voltage dropped below the safe operating limit.",
+            "Reduce load and recharge the battery."
         )
 
 
     # --------------------------------------------------------
-    # TEMPERATURE SAFETY
+    # TEMPERATURE
     # --------------------------------------------------------
 
-    if highest_temperature >= 50.0:
+    if highest_temperature >= 60:
 
-        faults.append(
-            "HIGH BATTERY TEMPERATURE"
+        add_fault(
+            "Critical Over-Temperature",
+            "critical",
+            "Battery temperature exceeded 60°C.",
+            "Stop operation and activate thermal protection."
         )
 
+    elif highest_temperature >= 50:
 
-    if highest_temperature >= 60.0:
-
-        faults.append(
-            "CRITICAL OVER-TEMPERATURE"
-        )
-
-
-    # --------------------------------------------------------
-    # CURRENT SAFETY
-    # --------------------------------------------------------
-
-    if highest_discharge_current > 30.0:
-
-        faults.append(
-            "EXCESSIVE DISCHARGE CURRENT"
-        )
-
-
-    if highest_charge_current < -20.0:
-
-        faults.append(
-            "EXCESSIVE CHARGING CURRENT"
+        add_fault(
+            "High Battery Temperature",
+            "warning",
+            "Battery temperature exceeded the warning threshold.",
+            "Reduce load and improve cooling."
         )
 
 
     # --------------------------------------------------------
-    # CELL BALANCING
+    # CURRENT
+    # --------------------------------------------------------
+
+    if highest_discharge_current > 30:
+
+        add_fault(
+            "Excessive Discharge Current",
+            "warning",
+            "Discharge current exceeded the configured BMS limit.",
+            "Reduce acceleration or motor load."
+        )
+
+
+    if highest_charge_current < -20:
+
+        add_fault(
+            "Excessive Charging Current",
+            "warning",
+            "Regenerative charging current exceeded the limit.",
+            "Reduce regenerative braking intensity."
+        )
+
+
+    # --------------------------------------------------------
+    # CELL IMBALANCE
     # --------------------------------------------------------
 
     if voltage_imbalance > 0.10:
 
-        faults.append(
-            "CELL IMBALANCE"
+        add_fault(
+            "Cell Imbalance",
+            "warning",
+            f"Group {weak_group} has the lowest voltage.",
+            "Inspect the weak group and perform cell balancing."
         )
 
 
@@ -729,36 +735,48 @@ def simulate_battery(
     # BATTERY HEALTH
     # --------------------------------------------------------
 
-    if soh <= 80.0:
+    if soh <= 80:
 
-        faults.append(
-            "LOW BATTERY HEALTH"
+        add_fault(
+            "Low Battery Health",
+            "warning",
+            f"Battery SOH has fallen to {soh:.1f}%.",
+            "Plan battery service or replacement."
         )
 
 
     # --------------------------------------------------------
-    # SIMULATED FAULT DESCRIPTION
+    # SIMULATED FAULTS
     # --------------------------------------------------------
 
     if fault_mode == "thermal_fault":
 
-        faults.append(
-            "SIMULATED THERMAL FAULT"
+        add_fault(
+            "Injected Thermal Fault",
+            "warning",
+            "A thermal fault was deliberately injected for testing.",
+            "Use this scenario to demonstrate BMS fault detection."
         )
 
 
     if fault_mode == "cell_fault":
 
-        faults.append(
-            "SIMULATED WEAK CELL FAULT"
+        add_fault(
+            "Injected Weak Cell Fault",
+            "warning",
+            "Group 5 was deliberately degraded.",
+            "Observe imbalance detection and weak-group identification."
         )
 
 
-    # Remove duplicate fault messages
+    if fault_mode == "overcurrent_fault":
 
-    faults = list(
-        dict.fromkeys(faults)
-    )
+        add_fault(
+            "Injected Overcurrent Fault",
+            "warning",
+            "A 45 A load was deliberately applied.",
+            "Observe BMS overcurrent protection."
+        )
 
 
     # ========================================================
@@ -767,25 +785,38 @@ def simulate_battery(
 
     status = "NORMAL"
 
-
-    if len(faults) > 0:
+    if fault_cards:
 
         status = "WARNING"
 
 
-    # Critical conditions
-
-    if (
-        highest_temperature >= 60.0
-        or lowest_voltage < 34.0
-        or soh < 70.0
+    if any(
+        fault["severity"] == "critical"
+        for fault in fault_cards
     ):
 
         status = "CRITICAL"
 
 
     # ========================================================
-    # RESULT FOR DASHBOARD
+    # REGENERATION EFFICIENCY INDICATOR
+    # ========================================================
+
+    if consumed_energy_wh > 0:
+
+        regen_ratio = (
+            regen_energy_wh
+            / consumed_energy_wh
+            * 100
+        )
+
+    else:
+
+        regen_ratio = 0.0
+
+
+    # ========================================================
+    # DASHBOARD RESULT
     # ========================================================
 
     battery = {
@@ -811,11 +842,6 @@ def simulate_battery(
         "status":
             status,
 
-        "faults":
-            ", ".join(faults)
-            if faults
-            else "None",
-
         "weak_group":
             weak_group,
 
@@ -828,16 +854,26 @@ def simulate_battery(
         "driving_condition":
             latest_mode,
 
-        # Extra values available for future UI features
-
         "effective_capacity":
             effective_capacity_ah,
 
         "peak_temperature":
             highest_temperature,
 
+        "peak_current":
+            highest_discharge_current,
+
         "pack_ocv":
-            latest_pack_ocv
+            latest_pack_ocv,
+
+        "energy_consumed":
+            consumed_energy_wh,
+
+        "regen_energy":
+            regen_energy_wh,
+
+        "regen_ratio":
+            regen_ratio
     }
 
 
@@ -869,19 +905,29 @@ def simulate_battery(
             rul_values,
 
         "driving_mode":
-            driving_modes
+            driving_modes,
+
+        "energy_consumed":
+            consumed_energy_values,
+
+        "regen_energy":
+            regen_energy_values,
+
+        "group_voltages":
+            group_voltage_history
     }
 
 
     return (
         battery,
         graph,
-        group_voltages
+        latest_group_voltages,
+        fault_cards
     )
 
 
 # ============================================================
-# MAIN WEB PAGE
+# MAIN ROUTE
 # ============================================================
 
 @app.route(
@@ -893,17 +939,12 @@ def simulate_battery(
 )
 def home():
 
-    # ========================================================
-    # READ SIMULATION CONTROL PANEL VALUES
-    # ========================================================
-
     initial_soc = safe_float(
         request.form.get(
             "initial_soc"
         ),
         95.0
     )
-
 
     load_multiplier = safe_float(
         request.form.get(
@@ -912,14 +953,12 @@ def home():
         1.0
     )
 
-
     ambient_temperature = safe_float(
         request.form.get(
             "ambient_temperature"
         ),
         25.0
     )
-
 
     aging_cycles = safe_int(
         request.form.get(
@@ -928,23 +967,21 @@ def home():
         0
     )
 
-
     fault_mode = request.form.get(
         "fault_mode",
         "none"
     )
 
 
-    # ========================================================
-    # SAFETY LIMITS FOR USER INPUT
-    # ========================================================
+    # --------------------------------------------------------
+    # INPUT LIMITS
+    # --------------------------------------------------------
 
     initial_soc = clamp(
         initial_soc,
-        10.0,
-        100.0
+        10,
+        100
     )
-
 
     load_multiplier = clamp(
         load_multiplier,
@@ -952,13 +989,11 @@ def home():
         2.0
     )
 
-
     ambient_temperature = clamp(
         ambient_temperature,
-        -10.0,
-        60.0
+        -10,
+        60
     )
-
 
     aging_cycles = int(
         clamp(
@@ -970,9 +1005,13 @@ def home():
 
 
     valid_fault_modes = [
+
         "none",
+
         "cell_fault",
+
         "thermal_fault",
+
         "overcurrent_fault"
     ]
 
@@ -982,34 +1021,33 @@ def home():
         fault_mode = "none"
 
 
-    # ========================================================
+    # --------------------------------------------------------
     # RUN DIGITAL TWIN
-    # ========================================================
+    # --------------------------------------------------------
 
-    battery, graph, groups = (
-        simulate_battery(
+    (
+        battery,
+        graph,
+        groups,
+        fault_cards
+    ) = simulate_battery(
 
-            initial_soc=
-                initial_soc,
+        initial_soc=
+            initial_soc,
 
-            load_multiplier=
-                load_multiplier,
+        load_multiplier=
+            load_multiplier,
 
-            ambient_temperature=
-                ambient_temperature,
+        ambient_temperature=
+            ambient_temperature,
 
-            aging_cycles=
-                aging_cycles,
+        aging_cycles=
+            aging_cycles,
 
-            fault_mode=
-                fault_mode
-        )
+        fault_mode=
+            fault_mode
     )
 
-
-    # ========================================================
-    # RETURN CONTROL VALUES TO HTML
-    # ========================================================
 
     controls = {
 
@@ -1030,10 +1068,6 @@ def home():
     }
 
 
-    # ========================================================
-    # DISPLAY DASHBOARD
-    # ========================================================
-
     return render_template(
 
         "index.html",
@@ -1048,7 +1082,13 @@ def home():
             groups,
 
         controls=
-            controls
+            controls,
+
+        fault_cards=
+            fault_cards,
+
+        animate=
+            request.method == "POST"
     )
 
 

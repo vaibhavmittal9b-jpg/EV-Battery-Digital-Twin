@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -11,21 +12,896 @@
 >
 
 <title>
-EV Battery Pack Digital Twin
+EV Battery Digital Twin V2
 </title>
 
-<script src="https://cdn.plot.ly/plotly-3.1.0.min.js"></script>
+
+<script
+src="https://cdn.plot.ly/plotly-3.1.0.min.js">
+</script>
+
 
 <style>
-:root{color-scheme:dark;--bg:#090e14;--panel:#111a24;--line:#263341;--muted:#a2b1c2;--mint:#71efd0;--amber:#ffc46b;--red:#ff8585}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:#edf4fa;font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:15px;line-height:1.55}a{color:inherit;text-decoration:none}button,input,select{font:inherit}button,a,input,select{outline-offset:5px} :focus-visible{outline:2px solid var(--mint)}
-.container{max-width:1460px;margin:auto;padding:0 40px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:22px 0;border-bottom:1px solid var(--line)}.brand{font-weight:750;letter-spacing:2px}.brand span{color:var(--mint)}nav{display:flex;gap:28px;color:var(--muted);font-size:13px}nav a:hover{color:var(--mint)}.eyebrow{text-transform:uppercase;letter-spacing:2px;font-size:11px;color:var(--mint);font-weight:700}.hero{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;padding:44px 0 32px}.title{font-size:clamp(30px,3.5vw,48px);font-weight:650;letter-spacing:-1.7px;line-height:1.15;margin:12px 0}.subtitle{color:var(--muted);max-width:520px;font-size:15px}.hero-tags{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.tag{border:1px solid var(--line);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--muted)}
-.pack-panel{background:radial-gradient(ellipse at center,#153e36 0, #111a24 70%);border:1px solid var(--line);border-radius:16px;padding:24px}.pack-header,.pack-footer{display:flex;align-items:center;justify-content:space-between;gap:12px}.pack-header{font-size:12px;color:var(--muted)}.pack-footer{margin-top:18px;font-size:12px;color:var(--muted)}.pack-footer strong{color:#edf4fa;font-size:22px}.pack-shell{position:relative;border:2px solid #5b9487;border-radius:10px;margin:28px 14px 12px;padding:12px;box-shadow:0 0 40px #71efd00d;display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.pack-shell:after{content:"";position:absolute;width:9px;height:30px;right:-11px;top:calc(50% - 15px);background:#5b9487;border-radius:0 3px 3px 0}.cell{height:48px;position:relative;overflow:hidden;background:#0a191a;border:1px solid #3b786a;border-radius:4px}.cell-fill{position:absolute;bottom:0;width:100%;background:linear-gradient(0deg,#1a6856,#71efd0);opacity:.7}.cell span{position:relative;display:grid;place-items:center;height:100%;font-size:10px;color:white}.cell.weak{border-color:var(--amber)}.cell.weak .cell-fill{background:var(--amber)}
-.section-title{font-size:20px;font-weight:650;letter-spacing:-.4px;margin:32px 0 16px;scroll-margin-top:20px}.section-note{font-size:12px;color:var(--muted);font-weight:400;display:block;letter-spacing:0;margin-top:4px}.simulation-panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px}.simulation-panel .section-title{margin:0 0 20px}.control-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:18px}.control-card{position:relative}.control-card label{display:block;color:var(--muted);font-size:12px;margin-bottom:9px}.control-card input,.control-card select{width:100%;min-height:46px;background:#0b121b;color:#edf4fa;border:1px solid #354555;border-radius:7px;padding:10px;font-size:14px}.control-card>span{display:block;color:var(--muted);font-size:11px;margin-top:5px}.simulate-button{margin-top:22px;padding:13px 22px;background:var(--mint);color:#082019;border:0;border-radius:8px;font-size:13px;font-weight:750;cursor:pointer}.simulate-button:hover{background:#a0ffe4}.simulate-button:disabled{opacity:.65;cursor:wait}.run-note{margin-left:18px;color:var(--muted);font-size:12px}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.metric-card,.info-card,.model-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px;min-width:0}.metric-label{font-size:12px;color:var(--muted);margin-bottom:14px}.metric-value{font-size:27px;font-weight:600;letter-spacing:-.6px;font-variant-numeric:tabular-nums}.metric-card:first-child .metric-value,.metric-card:nth-child(2) .metric-value{color:var(--mint)}.status{padding:16px 20px;border-radius:9px;font-size:14px;font-weight:650;margin-bottom:14px}.status-normal{background:#102c25;border:1px solid #32735d;color:var(--mint)}.status-warning{background:#302719;border:1px solid #876437;color:var(--amber)}.status-critical{background:#321c24;border:1px solid #98515c;color:var(--red)}.two-column{display:grid;grid-template-columns:1fr 1fr;gap:14px}.info-card{font-size:14px;overflow-wrap:anywhere}.info-card h3,.model-card h3{margin:0 0 12px;font-size:14px}.success{border-left:3px solid var(--mint)}.warning{border-left:3px solid var(--amber)}.danger{border-left:3px solid var(--red)}.graph-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.graph-card{min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;min-height:330px;overflow:hidden;padding:8px}.model-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.model-card{font-size:13px;color:var(--muted);line-height:1.9}.model-card h3{color:#edf4fa}.footer{border-top:1px solid var(--line);padding:25px 0;margin-top:38px;color:var(--muted);font-size:11px;text-align:center}.chart-error{padding:24px;color:var(--amber)}
-@media(max-width:1100px){.control-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.hero{gap:24px}.container{padding:0 24px}}
-@media(max-width:760px){.hero{grid-template-columns:1fr;padding-top:28px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.control-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.graph-grid,.model-grid,.two-column{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column;gap:12px}nav{gap:18px;flex-wrap:wrap}.run-note{display:block;margin:12px 0 0}.container{padding:0 16px}.metric-card{padding:16px}.metric-value{font-size:23px}}
-@media(max-width:420px){.control-grid{grid-template-columns:1fr}.simulation-panel{padding:18px}.simulate-button{width:100%}.pack-panel{padding:16px}.pack-footer{flex-wrap:wrap}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+
+    margin: 0;
+
+    font-family:
+        Inter,
+        Arial,
+        sans-serif;
+
+    background:
+        #07111f;
+
+    color:
+        #f8fafc;
+}
+
+
+.container {
+
+    max-width:
+        1550px;
+
+    margin:
+        auto;
+
+    padding:
+        28px;
+}
+
+
+/* ======================================================
+HEADER
+====================================================== */
+
+.header {
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+    margin-bottom:
+        30px;
+}
+
+
+.logo-title {
+
+    font-size:
+        34px;
+
+    font-weight:
+        700;
+}
+
+
+.subtitle {
+
+    color:
+        #94a3b8;
+
+    margin-top:
+        5px;
+}
+
+
+.status-pill {
+
+    padding:
+        10px 18px;
+
+    border-radius:
+        999px;
+
+    font-weight:
+        bold;
+}
+
+
+.status-normal {
+
+    background:
+        #064e3b;
+
+    color:
+        #6ee7b7;
+}
+
+
+.status-warning {
+
+    background:
+        #78350f;
+
+    color:
+        #fcd34d;
+}
+
+
+.status-critical {
+
+    background:
+        #7f1d1d;
+
+    color:
+        #fecaca;
+}
+
+
+/* ======================================================
+SECTIONS
+====================================================== */
+
+.section-title {
+
+    font-size:
+        22px;
+
+    font-weight:
+        700;
+
+    margin-top:
+        32px;
+
+    margin-bottom:
+        16px;
+}
+
+
+/* ======================================================
+PRESETS
+====================================================== */
+
+.preset-row {
+
+    display:
+        flex;
+
+    flex-wrap:
+        wrap;
+
+    gap:
+        10px;
+
+    margin-bottom:
+        15px;
+}
+
+
+.preset-button {
+
+    border:
+        1px solid #334155;
+
+    background:
+        #111c2e;
+
+    color:
+        #dbeafe;
+
+    padding:
+        10px 14px;
+
+    border-radius:
+        9px;
+
+    cursor:
+        pointer;
+}
+
+
+.preset-button:hover {
+
+    border-color:
+        #3b82f6;
+
+    background:
+        #172554;
+}
+
+
+/* ======================================================
+CONTROL PANEL
+====================================================== */
+
+.control-panel {
+
+    background:
+        #0e1b2d;
+
+    border:
+        1px solid #233449;
+
+    border-radius:
+        16px;
+
+    padding:
+        20px;
+}
+
+
+.control-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(5, 1fr);
+
+    gap:
+        14px;
+}
+
+
+.control-card {
+
+    background:
+        #111f33;
+
+    border:
+        1px solid #263a52;
+
+    border-radius:
+        12px;
+
+    padding:
+        15px;
+}
+
+
+.control-card label {
+
+    display:
+        block;
+
+    color:
+        #94a3b8;
+
+    font-size:
+        13px;
+
+    margin-bottom:
+        9px;
+}
+
+
+.control-card input,
+.control-card select {
+
+    width:
+        100%;
+
+    background:
+        #07111f;
+
+    color:
+        white;
+
+    border:
+        1px solid #334155;
+
+    border-radius:
+        8px;
+
+    padding:
+        10px;
+}
+
+
+.run-button {
+
+    width:
+        100%;
+
+    margin-top:
+        16px;
+
+    padding:
+        14px;
+
+    border:
+        none;
+
+    border-radius:
+        10px;
+
+    background:
+        #2563eb;
+
+    color:
+        white;
+
+    font-size:
+        16px;
+
+    font-weight:
+        bold;
+
+    cursor:
+        pointer;
+}
+
+
+.run-button:hover {
+
+    background:
+        #1d4ed8;
+}
+
+
+/* ======================================================
+DIGITAL TWIN HERO
+====================================================== */
+
+.twin-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        1.15fr 1fr;
+
+    gap:
+        20px;
+}
+
+
+.panel {
+
+    background:
+        #0e1b2d;
+
+    border:
+        1px solid #233449;
+
+    border-radius:
+        16px;
+
+    padding:
+        22px;
+}
+
+
+/* ======================================================
+GAUGES
+====================================================== */
+
+.gauge-row {
+
+    display:
+        flex;
+
+    justify-content:
+        center;
+
+    gap:
+        35px;
+
+    flex-wrap:
+        wrap;
+}
+
+
+.gauge {
+
+    width:
+        180px;
+
+    height:
+        180px;
+
+    border-radius:
+        50%;
+
+    background:
+        conic-gradient(
+            #22c55e 0deg,
+            #1e293b 0deg
+        );
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    position:
+        relative;
+}
+
+
+.gauge::before {
+
+    content:
+        "";
+
+    width:
+        135px;
+
+    height:
+        135px;
+
+    background:
+        #0e1b2d;
+
+    border-radius:
+        50%;
+
+    position:
+        absolute;
+}
+
+
+.gauge-content {
+
+    position:
+        relative;
+
+    z-index:
+        2;
+
+    text-align:
+        center;
+}
+
+
+.gauge-value {
+
+    font-size:
+        27px;
+
+    font-weight:
+        bold;
+}
+
+
+.gauge-label {
+
+    color:
+        #94a3b8;
+
+    font-size:
+        13px;
+
+    margin-top:
+        4px;
+}
+
+
+/* ======================================================
+BATTERY PACK VISUALIZATION
+====================================================== */
+
+.battery-shell {
+
+    position:
+        relative;
+
+    border:
+        3px solid #64748b;
+
+    border-radius:
+        14px;
+
+    padding:
+        16px;
+
+    margin-top:
+        22px;
+}
+
+
+.battery-shell::after {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    right:
+        -11px;
+
+    top:
+        36%;
+
+    width:
+        9px;
+
+    height:
+        28%;
+
+    background:
+        #64748b;
+
+    border-radius:
+        0 5px 5px 0;
+}
+
+
+.pack-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(6, 1fr);
+
+    gap:
+        7px;
+}
+
+
+.cell-group {
+
+    min-height:
+        62px;
+
+    border-radius:
+        7px;
+
+    background:
+        #064e3b;
+
+    border:
+        1px solid #10b981;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    font-size:
+        12px;
+}
+
+
+.cell-number {
+
+    color:
+        #94a3b8;
+
+    font-size:
+        10px;
+}
+
+
+.cell-voltage {
+
+    margin-top:
+        4px;
+
+    font-weight:
+        bold;
+}
+
+
+/* ======================================================
+METRICS
+====================================================== */
+
+.metrics-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap:
+        14px;
+}
+
+
+.metric-card {
+
+    background:
+        #111f33;
+
+    border:
+        1px solid #263a52;
+
+    border-radius:
+        12px;
+
+    padding:
+        18px;
+}
+
+
+.metric-label {
+
+    color:
+        #94a3b8;
+
+    font-size:
+        13px;
+
+    margin-bottom:
+        10px;
+}
+
+
+.metric-value {
+
+    font-size:
+        24px;
+
+    font-weight:
+        bold;
+}
+
+
+/* ======================================================
+DRIVING MODE
+====================================================== */
+
+.drive-mode {
+
+    margin-top:
+        18px;
+
+    padding:
+        14px;
+
+    text-align:
+        center;
+
+    border-radius:
+        10px;
+
+    background:
+        #172554;
+
+    color:
+        #bfdbfe;
+
+    font-weight:
+        bold;
+}
+
+
+/* ======================================================
+FAULT CARDS
+====================================================== */
+
+.fault-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap:
+        14px;
+}
+
+
+.fault-card {
+
+    border-radius:
+        12px;
+
+    padding:
+        17px;
+
+    background:
+        #111f33;
+
+    border-left:
+        5px solid #22c55e;
+}
+
+
+.fault-warning {
+
+    border-left-color:
+        #f59e0b;
+}
+
+
+.fault-critical {
+
+    border-left-color:
+        #ef4444;
+}
+
+
+.fault-title {
+
+    font-weight:
+        bold;
+
+    margin-bottom:
+        8px;
+}
+
+
+.fault-detail {
+
+    color:
+        #cbd5e1;
+
+    font-size:
+        13px;
+
+    margin-bottom:
+        10px;
+}
+
+
+.fault-action {
+
+    color:
+        #94a3b8;
+
+    font-size:
+        12px;
+}
+
+
+/* ======================================================
+GRAPHS
+====================================================== */
+
+.graph-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap:
+        18px;
+}
+
+
+.graph-card {
+
+    min-height:
+        380px;
+
+    background:
+        #0e1b2d;
+
+    border:
+        1px solid #233449;
+
+    border-radius:
+        15px;
+}
+
+
+/* ======================================================
+FOOTER
+====================================================== */
+
+.footer {
+
+    text-align:
+        center;
+
+    color:
+        #64748b;
+
+    margin:
+        45px 0 10px 0;
+}
+
+
+/* ======================================================
+RESPONSIVE
+====================================================== */
+
+@media (
+    max-width: 1100px
+) {
+
+    .control-grid {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+
+    .twin-grid {
+
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .metrics-grid {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+
+    .fault-grid {
+
+        grid-template-columns:
+            1fr;
+    }
+}
+
+
+@media (
+    max-width: 700px
+) {
+
+    .container {
+
+        padding:
+            15px;
+    }
+
+
+    .header {
+
+        flex-direction:
+            column;
+
+        align-items:
+            flex-start;
+
+        gap:
+            15px;
+    }
+
+
+    .control-grid {
+
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .metrics-grid {
+
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .graph-grid {
+
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .pack-grid {
+
+        grid-template-columns:
+            repeat(3, 1fr);
+    }
+}
+
 </style>
 
 </head>
@@ -36,188 +912,413 @@ EV Battery Pack Digital Twin
 <div class="container">
 
 
-<header class="topbar"><a class="brand" href="#overview"><span>◈</span> VOLT / TWIN</a><nav aria-label="Dashboard sections"><a href="#overview">Overview</a><a href="#simulation">Simulation</a><a href="#analysis">Telemetry</a><a href="#cells">Cell monitoring</a></nav></header>
-<section class="hero" id="overview">
-<div><div class="eyebrow">EV battery intelligence</div><h1 class="title">Your battery.<br>A clearer perspective.</h1><p class="subtitle">Explore pack performance, diagnose faults, and understand battery life with your virtual EV digital twin.</p><div class="hero-tags"><span class="tag">12S4P · Lithium-ion</span><span class="tag">600-second simulation</span><span class="tag">Simulation results</span></div></div>
-<div class="pack-panel"><div class="pack-header"><span>BATTERY PACK / 12 SERIES GROUPS</span><span>{{ battery.status }}</span></div><div class="pack-shell" role="img" aria-label="Battery pack at {{ '%.2f'|format(battery.soc) }} percent charge. Weakest group {{ battery.weak_group }}.">
-{% for voltage in groups %}<div class="cell {% if loop.index == battery.weak_group %}weak{% endif %}" title="Group {{ loop.index }}: {{ '%.3f'|format(voltage) }} V"><div class="cell-fill" style="height:{{ battery.soc }}%"></div><span>{{ '%02d'|format(loop.index) }}</span></div>{% endfor %}
-</div><div class="pack-footer"><span><strong>{{ '%.2f'|format(battery.soc) }}%</strong> charge</span><span>{{ '%.2f'|format(battery.voltage) }} V · {{ '%.2f'|format(battery.temperature) }} °C</span></div><div class="pack-footer"><span>Amber outline: weakest group</span><span>Fill: pack SOC</span></div></div>
-</section>
-<!-- BATTERY OVERVIEW -->
+<!-- =====================================================
+HEADER
+====================================================== -->
+
+<div class="header">
+
+<div>
+
+<div class="logo-title">
+
+🔋 EV Battery Digital Twin V2
+
+</div>
+
+<div class="subtitle">
+
+Real-Time Battery Monitoring,
+Predictive Health Analysis
+and Intelligent Fault Detection
+
+</div>
+
+</div>
 
 
-<section class="simulation-panel" id="simulation"><h2 class="section-title">Simulation controls<span class="section-note">Configure a driving scenario, then run the model to update every result.</span></h2>
+<div
+id="statusPill"
+class="
+status-pill
+{% if battery.status == 'NORMAL' %}
+status-normal
+{% elif battery.status == 'WARNING' %}
+status-warning
+{% else %}
+status-critical
+{% endif %}
+">
 
-<form method="POST">
+{{ battery.status }}
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+SCENARIO PRESETS
+====================================================== -->
+
+<div class="section-title">
+
+Scenario Presets
+
+</div>
+
+
+<div class="preset-row">
+
+<button
+class="preset-button"
+onclick="presetNormal()">
+Normal Drive
+</button>
+
+<button
+class="preset-button"
+onclick="presetAggressive()">
+Aggressive Drive
+</button>
+
+<button
+class="preset-button"
+onclick="presetHot()">
+Hot Weather
+</button>
+
+<button
+class="preset-button"
+onclick="presetAged()">
+Aged Battery
+</button>
+
+<button
+class="preset-button"
+onclick="presetWeakCell()">
+Weak Cell
+</button>
+
+<button
+class="preset-button"
+onclick="presetThermalFault()">
+Thermal Fault
+</button>
+
+</div>
+
+
+<!-- =====================================================
+CONTROL PANEL
+====================================================== -->
+
+<form method="POST" id="simulationForm">
+
+<div class="control-panel">
+
 
 <div class="control-grid">
 
-    <div class="control-card">
 
-        <label for="initial_soc">Initial SOC</label>
+<div class="control-card">
 
-        <input
-            type="number"
-            id="initial_soc" name="initial_soc"
-            min="10"
-            max="100"
-            step="1"
-            value="{{ controls.initial_soc }}"
-        >
+<label>
+Initial SOC
+</label>
 
-        <span>%</span>
+<input
+id="initial_soc"
+type="number"
+name="initial_soc"
+min="10"
+max="100"
+value="{{ controls.initial_soc }}"
+>
 
-    </div>
-
-
-    <div class="control-card">
-
-        <label for="load_multiplier">Driving Load</label>
-
-        <select id="load_multiplier" name="load_multiplier">
-
-            <option
-                value="0.7"
-                {% if controls.load_multiplier == 0.7 %}
-                selected
-                {% endif %}
-            >
-                Eco Driving
-            </option>
-
-            <option
-                value="1"
-                {% if controls.load_multiplier == 1 %}
-                selected
-                {% endif %}
-            >
-                Normal Driving
-            </option>
-
-            <option
-                value="1.4"
-                {% if controls.load_multiplier == 1.4 %}
-                selected
-                {% endif %}
-            >
-                Aggressive Driving
-            </option>
-
-        </select>
-
-    </div>
+</div>
 
 
-    <div class="control-card">
+<div class="control-card">
 
-        <label for="ambient_temperature">Ambient Temperature</label>
+<label>
+Driving Load
+</label>
 
-        <input
-            type="number"
-            id="ambient_temperature" name="ambient_temperature"
-            value="{{ controls.ambient_temperature }}"
-            min="-10"
-            max="60"
-        >
+<select
+id="load_multiplier"
+name="load_multiplier"
+>
 
-        <span>°C</span>
+<option
+value="0.7"
+{% if controls.load_multiplier == 0.7 %}
+selected
+{% endif %}
+>
+Eco Driving
+</option>
 
-    </div>
+<option
+value="1"
+{% if controls.load_multiplier == 1 %}
+selected
+{% endif %}
+>
+Normal Driving
+</option>
+
+<option
+value="1.4"
+{% if controls.load_multiplier == 1.4 %}
+selected
+{% endif %}
+>
+Aggressive Driving
+</option>
+
+</select>
+
+</div>
 
 
-    <div class="control-card">
+<div class="control-card">
 
-        <label for="aging_cycles">Battery Aging</label>
+<label>
+Ambient Temperature °C
+</label>
 
-        <input
-            type="number"
-            id="aging_cycles" name="aging_cycles"
-            value="{{ controls.aging_cycles }}"
-            min="0"
-            max="1500"
-        >
+<input
+id="ambient_temperature"
+type="number"
+name="ambient_temperature"
+min="-10"
+max="60"
+value="{{ controls.ambient_temperature }}"
+>
 
-        <span>cycles</span>
-
-    </div>
+</div>
 
 
-    <div class="control-card">
+<div class="control-card">
 
-        <label for="fault_mode">Fault Injection</label>
+<label>
+Battery Aging Cycles
+</label>
 
-        <select id="fault_mode" name="fault_mode">
+<input
+id="aging_cycles"
+type="number"
+name="aging_cycles"
+min="0"
+max="1500"
+value="{{ controls.aging_cycles }}"
+>
 
-            <option value="none" {% if controls.fault_mode == "none" %}selected{% endif %}>
-                Normal Operation
-            </option>
+</div>
 
-            <option
-                value="cell_fault"
-                {% if controls.fault_mode == "cell_fault" %}
-                selected
-                {% endif %}
-            >
-                Weak Cell Fault
-            </option>
 
-            <option
-                value="thermal_fault"
-                {% if controls.fault_mode == "thermal_fault" %}
-                selected
-                {% endif %}
-            >
-                Thermal Fault
-            </option>
+<div class="control-card">
 
-        <option value="overcurrent_fault" {% if controls.fault_mode == "overcurrent_fault" %}selected{% endif %}>Overcurrent Fault</option></select>
+<label>
+Fault Injection
+</label>
 
-    </div>
+<select
+id="fault_mode"
+name="fault_mode"
+>
+
+<option
+value="none"
+{% if controls.fault_mode == "none" %}
+selected
+{% endif %}
+>
+Normal Operation
+</option>
+
+<option
+value="cell_fault"
+{% if controls.fault_mode == "cell_fault" %}
+selected
+{% endif %}
+>
+Weak Cell Fault
+</option>
+
+<option
+value="thermal_fault"
+{% if controls.fault_mode == "thermal_fault" %}
+selected
+{% endif %}
+>
+Thermal Fault
+</option>
+
+<option
+value="overcurrent_fault"
+{% if controls.fault_mode == "overcurrent_fault" %}
+selected
+{% endif %}
+>
+Overcurrent Fault
+</option>
+
+</select>
+
+</div>
+
 
 </div>
 
 
 <button
-    type="submit"
-    class="simulate-button"
+type="submit"
+class="run-button"
 >
-▶ Run digital twin simulation
-</button><span class="run-note">Updates pack metrics, diagnostics, and all telemetry charts.</span>
 
-</form></section><h2 class="section-title">Battery pack overview<span class="section-note">Final state after the simulated driving cycle</span></h2>
+▶ RUN DIGITAL TWIN SIMULATION
 
+</button>
 
-<div class="metrics">
-
-
-<div class="metric-card">
-
-<div class="metric-label">
-State of Charge
-</div>
-
-<div class="metric-value">
-
-{{ "%.2f"|format(battery.soc) }} %
 
 </div>
 
-</div>
+</form>
 
 
-<div class="metric-card">
+<!-- =====================================================
+DIGITAL TWIN
+====================================================== -->
 
-<div class="metric-label">
-State of Health
-</div>
+<div class="section-title">
 
-<div class="metric-value">
-
-{{ "%.2f"|format(battery.soh) }} %
+Live Digital Twin
 
 </div>
 
+
+<div class="twin-grid">
+
+
+<!-- LEFT PANEL -->
+
+<div class="panel">
+
+
+<div class="gauge-row">
+
+
+<div
+id="socGauge"
+class="gauge"
+>
+
+<div class="gauge-content">
+
+<div
+id="socGaugeValue"
+class="gauge-value"
+>
+
+{{ "%.1f"|format(battery.soc) }}%
+
 </div>
+
+<div class="gauge-label">
+
+STATE OF CHARGE
+
+</div>
+
+</div>
+
+</div>
+
+
+<div
+id="sohGauge"
+class="gauge"
+>
+
+<div class="gauge-content">
+
+<div
+id="sohGaugeValue"
+class="gauge-value"
+>
+
+{{ "%.1f"|format(battery.soh) }}%
+
+</div>
+
+<div class="gauge-label">
+
+STATE OF HEALTH
+
+</div>
+
+</div>
+
+</div>
+
+
+</div>
+
+
+<div class="battery-shell">
+
+<div
+id="packGrid"
+class="pack-grid"
+>
+
+{% for voltage in groups %}
+
+<div class="cell-group">
+
+<div class="cell-number">
+
+G{{ loop.index }}
+
+</div>
+
+<div class="cell-voltage">
+
+{{ "%.3f"|format(voltage) }} V
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+
+<div
+id="driveMode"
+class="drive-mode"
+>
+
+Driving Mode:
+{{ battery.driving_condition }}
+
+</div>
+
+
+</div>
+
+
+<!-- RIGHT PANEL -->
+
+<div class="panel">
+
+
+<div class="metrics-grid">
 
 
 <div class="metric-card">
@@ -226,7 +1327,9 @@ State of Health
 Pack Voltage
 </div>
 
-<div class="metric-value">
+<div
+id="metricVoltage"
+class="metric-value">
 
 {{ "%.2f"|format(battery.voltage) }} V
 
@@ -241,7 +1344,9 @@ Pack Voltage
 Battery Current
 </div>
 
-<div class="metric-value">
+<div
+id="metricCurrent"
+class="metric-value">
 
 {{ "%.2f"|format(battery.current) }} A
 
@@ -256,7 +1361,9 @@ Battery Current
 Temperature
 </div>
 
-<div class="metric-value">
+<div
+id="metricTemperature"
+class="metric-value">
 
 {{ "%.2f"|format(battery.temperature) }} °C
 
@@ -268,12 +1375,29 @@ Temperature
 <div class="metric-card">
 
 <div class="metric-label">
-Remaining Useful Life
+RUL
+</div>
+
+<div
+id="metricRUL"
+class="metric-value">
+
+{{ "%.0f"|format(battery.rul) }} cycles
+
+</div>
+
+</div>
+
+
+<div class="metric-card">
+
+<div class="metric-label">
+Usable Capacity
 </div>
 
 <div class="metric-value">
 
-{{ "%.0f"|format(battery.rul) }} cycles
+{{ "%.2f"|format(battery.effective_capacity) }} Ah
 
 </div>
 
@@ -298,260 +1422,178 @@ Group {{ battery.weak_group }}
 <div class="metric-card">
 
 <div class="metric-label">
-Cell Imbalance
+Energy Consumed
 </div>
 
-<div class="metric-value">
+<div
+id="metricEnergy"
+class="metric-value">
 
-{{ "%.3f"|format(battery.cell_imbalance) }} V
-
-</div>
-
-</div>
-
+{{ "%.2f"|format(battery.energy_consumed) }} Wh
 
 </div>
-
-
-<!-- STATUS -->
-
-
-<h2 class="section-title">Battery Health Status</h2>
-
-
-{% if battery.status == "NORMAL" %}
-
-<div class="status status-normal">
-
-✓ BATTERY STATUS: NORMAL
-
-</div>
-
-{% elif battery.status == "WARNING" %}
-
-<div class="status status-warning">
-
-⚠ BATTERY STATUS: WARNING
-
-</div>
-
-{% else %}
-
-<div class="status status-critical">
-
-🚨 BATTERY STATUS:
-{{ battery.status }}
-
-</div>
-
-{% endif %}
-
-
-<div class="two-column">
-
-
-<div class="
-info-card
-{% if battery.faults == 'None' %}
-success
-{% else %}
-danger
-{% endif %}
-">
-
-<h3>
-Pack-Level Faults
-</h3>
-
-{% if battery.faults == "None" %}
-
-No pack-level fault detected.
-
-{% else %}
-
-{{ battery.faults }}
-
-{% endif %}
 
 </div>
 
 
-<div class="
-info-card
-{% if battery.cell_status == 'BALANCED' %}
-success
-{% else %}
-warning
+<div class="metric-card">
+
+<div class="metric-label">
+Regenerative Energy
+</div>
+
+<div
+id="metricRegen"
+class="metric-value">
+
+{{ "%.2f"|format(battery.regen_energy) }} Wh
+
+</div>
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<!-- =====================================================
+FAULT ANALYSIS
+====================================================== -->
+
+<div class="section-title">
+
+Intelligent Fault Analysis
+
+</div>
+
+
+<div class="fault-grid">
+
+
+{% if fault_cards %}
+
+{% for fault in fault_cards %}
+
+<div
+class="
+fault-card
+{% if fault.severity == 'warning' %}
+fault-warning
+{% elif fault.severity == 'critical' %}
+fault-critical
 {% endif %}
 ">
 
-<h3>
-Cell Group Status
-</h3>
+<div class="fault-title">
 
-{{ battery.cell_status }}
+{{ fault.title }}
 
-<br><br>
+</div>
 
-Weak Group:
-{{ battery.weak_group }}
+<div class="fault-detail">
+
+{{ fault.detail }}
+
+</div>
+
+<div class="fault-action">
+
+Recommended Action:
+{{ fault.action }}
+
+</div>
+
+</div>
+
+{% endfor %}
+
+
+{% else %}
+
+
+<div class="fault-card">
+
+<div class="fault-title">
+
+✓ No Fault Detected
+
+</div>
+
+<div class="fault-detail">
+
+The battery is operating within
+the configured safety limits.
+
+</div>
+
+<div class="fault-action">
+
+No corrective action required.
+
+</div>
 
 </div>
 
 
-</div>
+{% endif %}
 
-
-<!-- OPERATING CONDITION -->
-
-
-<h2 class="section-title">Vehicle Operating Condition</h2>
-
-
-<div class="info-card">
-
-Current Driving Mode:
-
-<strong>
-
-{{ battery.driving_condition }}
-
-</strong>
 
 </div>
 
 
-<!-- GRAPHS -->
+<!-- =====================================================
+PERFORMANCE GRAPHS
+====================================================== -->
 
+<div class="section-title">
 
-<h2 class="section-title" id="analysis">Battery Performance Analysis</h2>
+Battery Performance Analysis
+
+</div>
 
 
 <div class="graph-grid">
 
 
 <div
-    id="socGraph"
-    class="graph-card">
+id="socGraph"
+class="graph-card">
 </div>
 
 
 <div
-    id="voltageGraph"
-    class="graph-card">
+id="voltageGraph"
+class="graph-card">
 </div>
 
 
 <div
-    id="currentGraph"
-    class="graph-card">
+id="currentGraph"
+class="graph-card">
 </div>
 
 
 <div
-    id="temperatureGraph"
-    class="graph-card">
+id="temperatureGraph"
+class="graph-card">
 </div>
 
 
 <div
-    id="sohGraph"
-    class="graph-card">
+id="sohGraph"
+class="graph-card">
 </div>
 
 
 <div
-    id="rulGraph"
-    class="graph-card">
-</div>
-
-
-</div>
-
-
-<!-- CELL GROUP -->
-
-
-<h2 class="section-title" id="cells">Cell Group Monitoring</h2>
-
-
-<div
-    id="cellGraph"
-    class="graph-card">
-</div>
-
-
-<!-- MODEL INFO -->
-
-
-<h2 class="section-title">Digital Twin Information</h2>
-
-
-<div class="model-grid">
-
-
-<div class="model-card">
-
-<h3>
-Battery Configuration
-</h3>
-
-12S4P Lithium-ion Pack
-
-<br>
-
-48 physical cells represented
-
-<br>
-
-12 voltage-monitoring groups
-
-</div>
-
-
-<div class="model-card">
-
-<h3>
-Battery Models
-</h3>
-
-SOC Estimation
-
-<br>
-
-Equivalent Circuit Model
-
-<br>
-
-Thermal Model
-
-<br>
-
-SOH Degradation Model
-
-</div>
-
-
-<div class="model-card">
-
-<h3>
-Intelligent Monitoring
-</h3>
-
-BMS Protection
-
-<br>
-
-Cell Imbalance Detection
-
-<br>
-
-Weak Group Identification
-
-<br>
-
-RUL Prediction
-
+id="energyGraph"
+class="graph-card">
 </div>
 
 
@@ -560,112 +1602,332 @@ RUL Prediction
 
 <div class="footer">
 
-EV Battery Pack Digital Twin
+EV Battery Digital Twin V2
 |
-Software-Based Battery Monitoring
-and Predictive Analysis
+Software-Based Predictive Battery Intelligence
 
 </div>
 
 
 </div>
 
+
+<!-- =====================================================
+JAVASCRIPT
+====================================================== -->
 
 <script>
 
-document.querySelector('form').addEventListener('submit', function () {
-    const button = this.querySelector('button');
-    button.disabled = true;
-    button.textContent = 'Running simulation…';
-});
-window.addEventListener('pageshow', function () {
-    const button = document.querySelector('form button');
-    button.disabled = false;
-    button.textContent = '▶ Run digital twin simulation';
-});
-if (typeof Plotly === 'undefined') {
-    document.querySelectorAll('.graph-card').forEach(el => {
-        el.innerHTML = '<p class="chart-error">Charts could not load. Check your connection and reload. Simulation results remain available above.</p>';
-    });
-} else {
-const chartData =
-{{ graph | tojson }};
-
-const groupVoltages =
-{{ groups | tojson }};
 
 
-const commonLayout = {
-    height: 330,
-    colorway: ["#71efd0", "#7db5ff", "#ffc46b"],
+const simulation = {{ graph | tojson }};
+const finalBattery = {{ battery | tojson }};
+const shouldAnimate = {{ animate | tojson }};
+
+
+
+let animationTimer = null;
+
+
+/* =====================================================
+GAUGE UPDATE
+====================================================== */
+
+function updateGauge(
+    elementId,
+    valueId,
+    value,
+    color
+) {
+
+    const gauge =
+        document.getElementById(
+            elementId
+        );
+
+    const text =
+        document.getElementById(
+            valueId
+        );
+
+    const angle =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                value
+            )
+        ) * 3.6;
+
+    gauge.style.background =
+        `conic-gradient(
+            ${color} ${angle}deg,
+            #1e293b ${angle}deg
+        )`;
+
+    text.innerText =
+        value.toFixed(1) + "%";
+}
+
+
+/* =====================================================
+PACK UPDATE
+====================================================== */
+
+function updatePack(
+    voltages
+) {
+
+    const cells =
+        document.querySelectorAll(
+            ".cell-group"
+        );
+
+    if (
+        !voltages
+        || voltages.length === 0
+    ) {
+
+        return;
+    }
+
+
+    const highest =
+        Math.max(...voltages);
+
+    const lowest =
+        Math.min(...voltages);
+
+
+    cells.forEach(
+        (cell, index) => {
+
+            const voltage =
+                voltages[index];
+
+            const display =
+                cell.querySelector(
+                    ".cell-voltage"
+                );
+
+            display.innerText =
+                voltage.toFixed(3)
+                + " V";
+
+
+            const difference =
+                highest - voltage;
+
+
+            if (
+                difference > 0.10
+            ) {
+
+                cell.style.background =
+                    "#7f1d1d";
+
+                cell.style.borderColor =
+                    "#ef4444";
+            }
+
+            else if (
+                difference > 0.05
+            ) {
+
+                cell.style.background =
+                    "#78350f";
+
+                cell.style.borderColor =
+                    "#f59e0b";
+            }
+
+            else {
+
+                cell.style.background =
+                    "#064e3b";
+
+                cell.style.borderColor =
+                    "#10b981";
+            }
+
+        }
+    );
+}
+
+
+/* =====================================================
+METRICS
+====================================================== */
+
+function updateDashboard(
+    index
+) {
+
+    const soc =
+        simulation.soc[index];
+
+    const soh =
+        simulation.soh[index];
+
+    const voltage =
+        simulation.voltage[index];
+
+    const current =
+        simulation.current[index];
+
+    const temperature =
+        simulation.temperature[index];
+
+    const rul =
+        simulation.rul[index];
+
+    const mode =
+        simulation.driving_mode[index];
+
+
+    updateGauge(
+        "socGauge",
+        "socGaugeValue",
+        soc,
+        "#22c55e"
+    );
+
+
+    updateGauge(
+        "sohGauge",
+        "sohGaugeValue",
+        soh,
+        "#38bdf8"
+    );
+
+
+    document.getElementById(
+        "metricVoltage"
+    ).innerText =
+        voltage.toFixed(2)
+        + " V";
+
+
+    document.getElementById(
+        "metricCurrent"
+    ).innerText =
+        current.toFixed(2)
+        + " A";
+
+
+    document.getElementById(
+        "metricTemperature"
+    ).innerText =
+        temperature.toFixed(2)
+        + " °C";
+
+
+    document.getElementById(
+        "metricRUL"
+    ).innerText =
+        rul.toFixed(0)
+        + " cycles";
+
+
+    document.getElementById(
+        "metricEnergy"
+    ).innerText =
+        simulation
+        .energy_consumed[index]
+        .toFixed(2)
+        + " Wh";
+
+
+    document.getElementById(
+        "metricRegen"
+    ).innerText =
+        simulation
+        .regen_energy[index]
+        .toFixed(2)
+        + " Wh";
+
+
+    document.getElementById(
+        "driveMode"
+    ).innerText =
+        "Driving Mode: "
+        + mode;
+
+
+    updatePack(
+        simulation
+        .group_voltages[index]
+    );
+}
+
+
+/* =====================================================
+PLOTLY SETTINGS
+====================================================== */
+
+const chartLayout = {
 
     paper_bgcolor:
-        "#111a24",
+        "#0e1b2d",
 
     plot_bgcolor:
-        "#111a24",
+        "#0e1b2d",
 
     font: {
         color:
-            "#e2e8f0"
+            "#cbd5e1"
     },
 
     margin: {
-        l: 60,
-        r: 30,
-        t: 60,
-        b: 60
+        l: 55,
+        r: 20,
+        t: 55,
+        b: 50
+    },
+
+    xaxis: {
+        title:
+            "Time (seconds)",
+
+        gridcolor:
+            "#233449"
     }
 };
 
 
-function lineGraph(
-    element,
-    y,
+function createEmptyChart(
+    id,
     title,
     yTitle
 ) {
 
     Plotly.newPlot(
 
-        element,
+        id,
 
         [{
-            x:
-                chartData.time,
-
-            y:
-                y,
-
-            type:
-                "scatter",
+            x: [],
+            y: [],
 
             mode:
                 "lines",
 
-            line: {
-                width:
-                    3
-            }
+            type:
+                "scatter"
         }],
 
         {
-            ...commonLayout,
+            ...chartLayout,
 
-            title: {text: title, x: 0.06, font: {size: 14}},
-
-            xaxis: {
-                title: {text: "Time (seconds)"},
-
-                gridcolor:
-                    "#263341"
-            },
+            title:
+                title,
 
             yaxis: {
-                title: {text: yTitle},
+                title:
+                    yTitle,
 
                 gridcolor:
-                    "#263341"
+                    "#233449"
             }
         },
 
@@ -680,106 +1942,570 @@ function lineGraph(
 }
 
 
-lineGraph(
-    "socGraph",
-    chartData.soc,
-    "State of Charge vs Time",
-    "SOC (%)"
-);
+/* =====================================================
+CREATE CHARTS
+====================================================== */
+
+function initializeCharts() {
+
+    createEmptyChart(
+        "socGraph",
+        "State of Charge",
+        "SOC (%)"
+    );
 
 
-lineGraph(
-    "voltageGraph",
-    chartData.voltage,
-    "Battery Pack Voltage vs Time",
-    "Voltage (V)"
-);
+    createEmptyChart(
+        "voltageGraph",
+        "Pack Voltage",
+        "Voltage (V)"
+    );
 
 
-lineGraph(
-    "currentGraph",
-    chartData.current,
-    "Battery Current vs Time",
-    "Current (A)"
-);
+    createEmptyChart(
+        "currentGraph",
+        "Battery Current",
+        "Current (A)"
+    );
 
 
-lineGraph(
-    "temperatureGraph",
-    chartData.temperature,
-    "Battery Temperature vs Time",
-    "Temperature (°C)"
-);
+    createEmptyChart(
+        "temperatureGraph",
+        "Battery Temperature",
+        "Temperature (°C)"
+    );
 
 
-lineGraph(
-    "sohGraph",
-    chartData.soh,
-    "State of Health vs Time",
-    "SOH (%)"
-);
+    createEmptyChart(
+        "sohGraph",
+        "State of Health",
+        "SOH (%)"
+    );
 
 
-lineGraph(
-    "rulGraph",
-    chartData.rul,
-    "Remaining Useful Life Prediction",
-    "Remaining Cycles"
-);
+    Plotly.newPlot(
 
+        "energyGraph",
 
-// CELL GROUP BAR GRAPH
+        [
 
+            {
+                x: [],
+                y: [],
 
-const labels =
-groupVoltages.map(
-    (_, i) =>
-        "Group " + (i + 1)
-);
+                name:
+                    "Consumed",
 
+                mode:
+                    "lines"
+            },
 
-Plotly.newPlot(
+            {
+                x: [],
+                y: [],
 
-    "cellGraph",
+                name:
+                    "Recovered",
 
-    [{
-        x:
-            labels,
+                mode:
+                    "lines"
+            }
 
-        y:
-            groupVoltages,
+        ],
 
-        type: "bar", marker: {color: groupVoltages.map((_, i) => i + 1 === {{ battery.weak_group | tojson }} ? "#ffc46b" : "#71efd0")}
-    }],
+        {
 
-    {
-        ...commonLayout,
+            ...chartLayout,
 
-        title: {text: "12-Series Group Voltage Monitoring", x: 0.06, font: {size: 14}},
+            title:
+                "Energy Flow",
 
-        xaxis: {
-            title: {text: "Battery Series Group"}
+            yaxis: {
+
+                title:
+                    "Energy (Wh)",
+
+                gridcolor:
+                    "#233449"
+            }
+
         },
 
-        yaxis: {
-            title: {text: "Voltage (V)"},
+        {
+            responsive:
+                true,
 
-            gridcolor:
-                "#263341"
+            displaylogo:
+                false
         }
-    },
+    );
+}
 
-    {
+
+/* =====================================================
+STATIC GRAPHS
+====================================================== */
+
+function renderFullGraphs() {
+
+    const config = {
+
         responsive:
             true,
 
         displaylogo:
             false
+    };
+
+
+    function line(
+        id,
+        y,
+        title,
+        yTitle
+    ) {
+
+        Plotly.react(
+
+            id,
+
+            [{
+                x:
+                    simulation.time,
+
+                y:
+                    y,
+
+                mode:
+                    "lines",
+
+                type:
+                    "scatter"
+            }],
+
+            {
+
+                ...chartLayout,
+
+                title:
+                    title,
+
+                yaxis: {
+
+                    title:
+                        yTitle,
+
+                    gridcolor:
+                        "#233449"
+                }
+
+            },
+
+            config
+        );
     }
 
+
+    line(
+        "socGraph",
+        simulation.soc,
+        "State of Charge",
+        "SOC (%)"
+    );
+
+
+    line(
+        "voltageGraph",
+        simulation.voltage,
+        "Pack Voltage",
+        "Voltage (V)"
+    );
+
+
+    line(
+        "currentGraph",
+        simulation.current,
+        "Battery Current",
+        "Current (A)"
+    );
+
+
+    line(
+        "temperatureGraph",
+        simulation.temperature,
+        "Battery Temperature",
+        "Temperature (°C)"
+    );
+
+
+    line(
+        "sohGraph",
+        simulation.soh,
+        "State of Health",
+        "SOH (%)"
+    );
+
+
+    Plotly.react(
+
+        "energyGraph",
+
+        [
+
+            {
+                x:
+                    simulation.time,
+
+                y:
+                    simulation
+                    .energy_consumed,
+
+                name:
+                    "Consumed",
+
+                mode:
+                    "lines"
+            },
+
+            {
+                x:
+                    simulation.time,
+
+                y:
+                    simulation
+                    .regen_energy,
+
+                name:
+                    "Recovered",
+
+                mode:
+                    "lines"
+            }
+
+        ],
+
+        {
+
+            ...chartLayout,
+
+            title:
+                "Energy Flow",
+
+            yaxis: {
+
+                title:
+                    "Energy (Wh)",
+
+                gridcolor:
+                    "#233449"
+            }
+
+        },
+
+        config
+    );
+}
+
+
+/* =====================================================
+LIVE ANIMATION
+====================================================== */
+
+function startAnimation() {
+
+    if (
+        animationTimer
+    ) {
+
+        clearInterval(
+            animationTimer
+        );
+    }
+
+
+    initializeCharts();
+
+
+    let index = 0;
+
+
+    animationTimer =
+        setInterval(
+            () => {
+
+                updateDashboard(
+                    index
+                );
+
+
+                const time =
+                    simulation.time[index];
+
+
+                Plotly.extendTraces(
+                    "socGraph",
+                    {
+                        x: [[time]],
+                        y: [[
+                            simulation
+                            .soc[index]
+                        ]]
+                    },
+                    [0]
+                );
+
+
+                Plotly.extendTraces(
+                    "voltageGraph",
+                    {
+                        x: [[time]],
+                        y: [[
+                            simulation
+                            .voltage[index]
+                        ]]
+                    },
+                    [0]
+                );
+
+
+                Plotly.extendTraces(
+                    "currentGraph",
+                    {
+                        x: [[time]],
+                        y: [[
+                            simulation
+                            .current[index]
+                        ]]
+                    },
+                    [0]
+                );
+
+
+                Plotly.extendTraces(
+                    "temperatureGraph",
+                    {
+                        x: [[time]],
+                        y: [[
+                            simulation
+                            .temperature[index]
+                        ]]
+                    },
+                    [0]
+                );
+
+
+                Plotly.extendTraces(
+                    "sohGraph",
+                    {
+                        x: [[time]],
+                        y: [[
+                            simulation
+                            .soh[index]
+                        ]]
+                    },
+                    [0]
+                );
+
+
+                Plotly.extendTraces(
+                    "energyGraph",
+
+                    {
+                        x: [
+                            [time],
+                            [time]
+                        ],
+
+                        y: [
+
+                            [
+                                simulation
+                                .energy_consumed[index]
+                            ],
+
+                            [
+                                simulation
+                                .regen_energy[index]
+                            ]
+                        ]
+                    },
+
+                    [0, 1]
+                );
+
+
+                index++;
+
+
+                if (
+                    index
+                    >= simulation.time.length
+                ) {
+
+                    clearInterval(
+                        animationTimer
+                    );
+
+                    animationTimer =
+                        null;
+                }
+
+            },
+
+            80
+        );
+}
+
+
+/* =====================================================
+SCENARIO PRESETS
+====================================================== */
+
+function presetNormal() {
+
+    initial_soc.value =
+        95;
+
+    load_multiplier.value =
+        1;
+
+    ambient_temperature.value =
+        25;
+
+    aging_cycles.value =
+        0;
+
+    fault_mode.value =
+        "none";
+}
+
+
+function presetAggressive() {
+
+    initial_soc.value =
+        90;
+
+    load_multiplier.value =
+        1.4;
+
+    ambient_temperature.value =
+        30;
+
+    aging_cycles.value =
+        100;
+
+    fault_mode.value =
+        "none";
+}
+
+
+function presetHot() {
+
+    initial_soc.value =
+        90;
+
+    load_multiplier.value =
+        1;
+
+    ambient_temperature.value =
+        45;
+
+    aging_cycles.value =
+        200;
+
+    fault_mode.value =
+        "none";
+}
+
+
+function presetAged() {
+
+    initial_soc.value =
+        95;
+
+    load_multiplier.value =
+        1;
+
+    ambient_temperature.value =
+        25;
+
+    aging_cycles.value =
+        800;
+
+    fault_mode.value =
+        "none";
+}
+
+
+function presetWeakCell() {
+
+    initial_soc.value =
+        95;
+
+    load_multiplier.value =
+        1;
+
+    ambient_temperature.value =
+        25;
+
+    aging_cycles.value =
+        300;
+
+    fault_mode.value =
+        "cell_fault";
+}
+
+
+function presetThermalFault() {
+
+    initial_soc.value =
+        90;
+
+    load_multiplier.value =
+        1.4;
+
+    ambient_temperature.value =
+        40;
+
+    aging_cycles.value =
+        400;
+
+    fault_mode.value =
+        "thermal_fault";
+}
+
+
+/* =====================================================
+PAGE LOAD
+====================================================== */
+
+window.addEventListener(
+    "load",
+    () => {
+
+        if (
+            shouldAnimate
+        ) {
+
+            startAnimation();
+
+        }
+
+        else {
+
+            initializeCharts();
+
+            renderFullGraphs();
+
+            updateDashboard(
+                simulation.time.length - 1
+            );
+        }
+
+    }
 );
 
-}
+
 </script>
 
 
