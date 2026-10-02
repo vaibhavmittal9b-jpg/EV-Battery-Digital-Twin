@@ -930,6 +930,129 @@ def simulate_battery(
 # MAIN ROUTE
 # ============================================================
 
+
+def simulate_charging(initial_soc=20, target_soc=90, charging_current=6,
+                      ambient_temperature=25, aging_cycles=0):
+    """Illustrative 12S4P charging model; taper/thermal coefficients are assumptions."""
+    import math
+    def number(value, default, low, high):
+        value = safe_float(value, default)
+        return clamp(value if math.isfinite(value) else default, low, high)
+    soc = number(initial_soc, 20, 0, 100)
+    start_soc = soc
+    target = number(target_soc, 90, 0, 100)
+    requested_current = number(charging_current, 6, 0.5, 12)
+    ambient = number(ambient_temperature, 25, -10, 60)
+    aging = number(aging_cycles, 0, 0, 1500)
+    soh = clamp(100 - aging * 0.02, 60, 100)
+    capacity = 12 * soh / 100
+    resistance = 0.03 * (1 + (100 - soh) * 0.015)
+    temperature = ambient
+    peak_temperature = ambient
+    energy = elapsed = 0.0
+    current = 0.0
+    phase = "Ready to charge"
+    reason = "Target reached"
+    faults = []
+    graph = {key: [] for key in ['time', 'soc', 'soh', 'voltage', 'current',
+             'temperature', 'rul', 'driving_mode', 'energy_consumed', 'regen_energy',
+             'group_voltages']}
+    def record():
+        voltage = min(50.4, cell_ocv_from_soc(soc)*12 + current*resistance)
+        groups = [voltage/12 + (i % 3 - 1)*0.006 - (0.04 if i == 4 else 0)
+                  for i in range(12)]
+        values = [elapsed, soc, soh, voltage, -current, temperature,
+                  max(0, (soh-80)/0.02), phase, energy, 0.0, groups]
+        for key, value in zip(graph, values): graph[key].append(value)
+    record()
+    if target <= start_soc:
+        reason = "Starting SOC already meets or exceeds target"
+        phase = "No charging needed"
+    elif not 0 <= ambient < 45:
+        reason = "Charging blocked by temperature limit"
+        phase = "Temperature protection"
+        faults.append(dict(title="Charging temperature limit", severity="warning",
+                           detail="This model permits charging from 0°C to below 45°C.",
+                           action="Choose an ambient temperature within the model's range."))
+    else:
+        while soc < target - 1e-9 and elapsed < 24*3600:
+            if temperature >= 45:
+                reason = "Stopped at temperature limit"
+                phase = "Temperature protection"
+                faults.append(dict(title="Charging stopped", severity="warning",
+                                   detail="The modeled pack reached 45°C before the target SOC.",
+                                   action="Try a lower charging current or ambient temperature."))
+                break
+            # Approximate constant-current bulk phase and high-SOC taper.
+            taper = 1 if soc < 80 else max(0.1, (100-soc)/20)
+            current = requested_current * taper
+            phase = "Constant current" if soc < 80 else "Taper charging"
+            seconds_to_target = (target-soc)/100*capacity*3600/(current*0.95)
+            step = min(30.0, seconds_to_target, 24*3600-elapsed)
+            voltage = min(50.4, cell_ocv_from_soc(soc)*12 + current*resistance)
+            # Lumped thermal balance: 1000 J/K heat capacity and 2 W/K cooling.
+            equilibrium = ambient + current*current*resistance/2.0
+            next_temperature = equilibrium + (temperature-equilibrium)*math.exp(-step/500)
+            # Land on the thermal cutoff rather than overshooting it.
+            cutoff = next_temperature >= 45 and equilibrium > 45
+            if cutoff:
+                step = -500*math.log((45-equilibrium)/(temperature-equilibrium))
+                next_temperature = 45.0
+            soc = min(target, soc + current*0.95*step/3600/capacity*100)
+            energy += voltage*current*step/3600
+            elapsed += step
+            temperature = next_temperature
+            peak_temperature = max(peak_temperature, temperature)
+            record()
+        if elapsed >= 24*3600 and soc < target-1e-9:
+            reason = "Stopped at 24-hour simulation limit"
+            phase = "Time limit"
+            faults.append(dict(title="Simulation time limit", severity="warning",
+                               detail="The target was not reached within 24 simulated hours.",
+                               action="Choose a higher charging current or a lower target."))
+    current = 0.0
+    if soc >= target and target > start_soc: phase = "Charging complete"
+    record()
+    groups=graph['group_voltages'][-1]
+    battery=dict(soc=soc, soh=soh, voltage=graph['voltage'][-1], current=0,
+                 temperature=temperature, rul=max(0,(soh-80)/0.02),
+                 status='WARNING' if faults else 'NORMAL', weak_group=5,
+                 cell_imbalance=max(groups)-min(groups), cell_status='BALANCED',
+                 driving_condition=phase, effective_capacity=capacity,
+                 peak_temperature=peak_temperature, peak_current=requested_current,
+                 pack_ocv=cell_ocv_from_soc(soc)*12, energy_consumed=energy,
+                 regen_energy=0, regen_ratio=0)
+    summary=dict(minutes=elapsed/60, target=target, start_soc=start_soc,
+                 reached=soc>=target, reason=reason, energy_wh=energy,
+                 peak_temperature=peak_temperature)
+    # Limit rendered points while retaining start, finish, and cutoff state.
+    if len(graph['time']) > 360:
+        indices=sorted(set(range(0,len(graph['time']),math.ceil(len(graph['time'])/359)))
+                       | {len(graph['time'])-1})
+        graph={key:[values[i] for i in indices] for key,values in graph.items()}
+    return battery,graph,groups,faults,summary
+
+
+@app.route('/charging', methods=['GET', 'POST'])
+def charging():
+    import math
+    def value(name, default, low, high):
+        parsed=safe_float(request.form.get(name),default)
+        return clamp(parsed if math.isfinite(parsed) else default,low,high)
+    controls=dict(initial_soc=value('initial_soc',20,0,100),
+                  target_soc=value('target_soc',90,0,100),
+                  charging_current=value('charging_current',6,0.5,12),
+                  ambient_temperature=value('ambient_temperature',25,-10,60),
+                  aging_cycles=int(value('aging_cycles',0,0,1500)),
+                  load_multiplier=1, fault_mode='none')
+    battery,graph,groups,fault_cards,summary=simulate_charging(**{
+        key:controls[key] for key in ['initial_soc','target_soc','charging_current',
+                                     'ambient_temperature','aging_cycles']})
+    return render_template('index.html',battery=battery,graph=graph,groups=groups,
+                           fault_cards=fault_cards,controls=controls,animate=False,
+                           charging_mode=True,charging_summary=summary)
+
+
 @app.route(
     "/",
     methods=[
